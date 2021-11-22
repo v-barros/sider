@@ -5,13 +5,34 @@
  *      Author: @v-barros
  */
 #include "server.h"
-   
+#include "ht.h"
+#define commands 2
+typedef int fun(char * args);
+
+struct userCommand{
+    char *name;
+    fun * execFunction;
+};
+
+struct userCommand userCommandTable[2]={
+    {
+        "get",
+        getFun
+    },
+    {
+        "set",
+        setFun
+    }
+};
+
+int formatCommand(char * s);
+Table* table;
 // Function designed for chat between client and server.
-void func(int sockfd)
+void run(int sockfd)
 {
+    table = createTable();
     char buff[MAX];
-    int n;
-    // infinite loop for chat
+    int n, reply;
     for (;;) {
         bzero(buff, MAX);
    
@@ -20,14 +41,15 @@ void func(int sockfd)
         // print buffer which contains the client contents
         printf("From client: %s\t To client : ", buff);
         bzero(buff, MAX);
-        n = 0;
-        // copy server message in the buffer
-        while ((buff[n++] = getchar()) != '\n')
-            ;
-   
-        // and send that buffer to client
+        n = formatCommand(buff);
+        if(n){
+            if(userCommandTable[n].execFunction(buff))
+                memcpy(buff,"1",2);
+            else
+                memcpy(buff,"0",2);
+        }
+        
         write(sockfd, buff, sizeof(buff));
-   
         // if msg contains "Exit" then server exit and chat ended.
         if (strncmp("exit", buff, 4) == 0) {
             printf("Server Exit...\n");
@@ -35,4 +57,23 @@ void func(int sockfd)
         }
     }
 }
-   
+
+int formatCommand(char * s){
+    if(strlen(s)!=3) return 0;
+    int i=0;
+    for(;i<commands;i++)
+        if(!strncmp(s,userCommandTable[i].name,3))
+            return 1;
+    return 0;
+}
+
+int getFun(char * args){
+    char *p = args;
+    while(*p++!=' ');
+    printf("%s",p);
+    return 0x31;
+}
+
+int setFun(char * args){
+    return 0x31;
+}
