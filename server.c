@@ -6,7 +6,9 @@
  */
 #include "server.h"
 #include "ht.h"
+
 #define commands 2
+#define replies 2
 typedef int fun(char * args);
 
 struct userCommand{
@@ -14,7 +16,7 @@ struct userCommand{
     fun * execFunction;
 };
 
-struct userCommand userCommandTable[2]={
+struct userCommand userCommandTable[commands]={
     {
         "get",
         getFun
@@ -24,6 +26,20 @@ struct userCommand userCommandTable[2]={
         setFun
     }
 };
+
+struct serverReply {
+    char * text;   
+};
+
+struct serverReply serverReplyTable[replies] ={
+    {
+        "KO",
+    },
+    {
+        "OK",
+    }
+};
+
 
 int formatCommand(char * s);
 Table* table;
@@ -35,18 +51,18 @@ void run(int sockfd)
     int n, reply;
     for (;;) {
         bzero(buff, MAX);
-   
+        reply =0;
         // read the message from client and copy it in buffer
         read(sockfd, buff, sizeof(buff));
         // print buffer which contains the client contents
-        printf("From client: %s\t To client : ", buff);
-        bzero(buff, MAX);
-        memcpy(buff,"0\0",2);
+        printf("\nFrom client: %s\t", buff);
         n = formatCommand(buff);
-        if(n){
+        if(n!=-1){
             if(userCommandTable[n].execFunction(buff))
-                memcpy(buff,"1\0",2);                
-        }
+                reply =1;            
+         }
+        bzero(buff, MAX);
+        memcpy(buff,serverReplyTable[reply].text,3);
         
         write(sockfd, buff, sizeof(buff));
         // if msg contains "Exit" then server exit and chat ended.
@@ -58,21 +74,30 @@ void run(int sockfd)
 }
 
 int formatCommand(char * s){
-    if(strlen(s)!=3) return 0;
+    
     int i=0;
-    for(;i<commands;i++)
-        if(!strncmp(s,userCommandTable[i].name,3))
-            return 1;
-    return 0;
+    for(;i<commands;i++){
+        if(strncmp(s,userCommandTable[i].name,3) ==0)
+        {
+            return i;
+        }
+    }
+        
+    return -1;
 }
 
 int getFun(char * args){
     char *p = args;
-    while(*p++!=' ');
-    printf("%s",p);
-    return 0x31;
+    printf("command: ");
+    while(*p!=' '){
+        printf("%c",*p);
+        p++;
+    }
+    p++;
+    printf(" arguments %s",p);
+    return 1;
 }
 
 int setFun(char * args){
-    return 0x31;
+    return 1;
 }
