@@ -41,12 +41,11 @@ void run(int sockfd)
         // print buffer which contains the client contents
         printf("From client: %s\t To client : ", buff);
         bzero(buff, MAX);
+        memcpy(buff,"0\0",2);
         n = formatCommand(buff);
         if(n){
             if(userCommandTable[n].execFunction(buff))
-                memcpy(buff,"1",2);
-            else
-                memcpy(buff,"0",2);
+                memcpy(buff,"1\0",2);                
         }
         
         write(sockfd, buff, sizeof(buff));
