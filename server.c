@@ -6,26 +6,9 @@
  */
 #include "server.h"
 #include "ht.h"
-
-#define commands 2
+#include "commands.h"
 #define replies 2
-typedef int fun(char * args);
 
-struct userCommand{
-    char *name;
-    fun * execFunction;
-};
-
-struct userCommand userCommandTable[commands]={
-    {
-        "get",
-        getFun
-    },
-    {
-        "set",
-        setFun
-    }
-};
 
 struct serverReply {
     char * text;   
@@ -74,30 +57,13 @@ void run(int sockfd)
 }
 
 int formatCommand(char * s){
-    
     int i=0;
     for(;i<commands;i++){
         if(strncmp(s,userCommandTable[i].name,3) ==0)
         {
             return i;
         }
-    }
-        
+    }    
     return -1;
 }
 
-int getFun(char * args){
-    char *p = args;
-    printf("command: ");
-    while(*p!=' '){
-        printf("%c",*p);
-        p++;
-    }
-    p++;
-    printf(" arguments %s",p);
-    return 1;
-}
-
-int setFun(char * args){
-    return 1;
-}
