@@ -3,6 +3,12 @@
 
 #define commands 2
 
+typedef int fun(char * args);
+
+struct userCommand{
+    char *name;
+    fun * execFunction;
+};
 int getFun(char * args);
 
 int setFun(char * args);
