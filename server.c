@@ -9,21 +9,6 @@
 #include "commands.h"
 #define replies 2
 
-
-struct serverReply {
-    char * text;   
-};
-
-struct serverReply serverReplyTable[replies] ={
-    {
-        "KO",
-    },
-    {
-        "OK",
-    }
-};
-
-
 int formatCommand(char * s);
 Table* table;
 // Function designed for chat between client and server.
@@ -31,21 +16,22 @@ void run(int sockfd)
 {
     table = createTable();
     char buff[MAX];
-    int n, reply;
+    int n;
+    struct serverReply reply={"KO",2};
     for (;;) {
+        putError(&reply);
         bzero(buff, MAX);
-        reply =0;
+        
         // read the message from client and copy it in buffer
         read(sockfd, buff, sizeof(buff));
         // print buffer which contains the client contents
         printf("\nFrom client: %s\t", buff);
         n = formatCommand(buff);
         if(n!=-1){
-            if(userCommandTable[n].execFunction(buff))
-                reply =1;            
+            userCommandTable[n].execFunction(table,buff,&reply);            
          }
         bzero(buff, MAX);
-        memcpy(buff,serverReplyTable[reply].text,3);
+        memcpy(buff,reply.text,reply.len);
         
         write(sockfd, buff, sizeof(buff));
         // if msg contains "Exit" then server exit and chat ended.
@@ -67,3 +53,17 @@ int formatCommand(char * s){
     return -1;
 }
 
+void putError(struct serverReply * rp){
+    rp->text = "KO";
+    rp->len = 2;
+}
+
+void putOk(struct serverReply* rp){
+    rp->text = "OK";
+    rp->len = 2;
+}
+
+void putText(struct serverReply*rp, const char * text){
+    rp->len = strlen(text);
+    memcpy(rp->text,text,rp->len);
+}

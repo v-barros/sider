@@ -18,9 +18,16 @@
 #define PORT 8080
 #define SA struct sockaddr
    
-int getFun(char * args);
+struct serverReply {
+    char * text; 
+    int len;  
+};
 
-int setFun(char * args);
+void putError(struct serverReply *);
+
+void putOk(struct serverReply*);
+
+void putText(struct serverReply*, const char * text);
 
 // Function designed for chat between client and server.
 void run(int sockfd);
