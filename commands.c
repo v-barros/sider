@@ -7,8 +7,22 @@
 #define maxkeylength 100
 #define maxvaluelength 100
 
+// n must be positive
+// convert n to array of char in dest and return num of chars
+// ex: 65535
+// put "65535" on dest
+// return 5
+int toString(int n,char*dest);
+
 char itochar(int n);
 
+// check if input string is a valid get command
+// return -1 if false
+// return key length otherwise
+// ex: c = "get key" len = 7
+// return 3
+// ex: c = "get key key2" len = 11
+// return -1
 int is_valid_get(char*c, int len){
     int i=0,aux =0;
     char * key;
@@ -25,8 +39,7 @@ int is_valid_get(char*c, int len){
     key =c+4;
         
     aux = len - 4; // 3 
-    //g e t - f o o - b a r
-    //  0 1 2 3 4 5 6 7 8 9 10
+
     i = 0;
     while(i<aux){
         if(*key+i == ' ')
@@ -40,23 +53,37 @@ int is_valid_set(char*c,int len){
     return -1;
 }
 
-
 int encode_get(char *src,int len,char * dest){
     dest[0]='$';
     dest[1]='0';
     dest[2]='$';   
-    dest[3]=itochar(len);
-    memcpy(dest+4,src+4,len);    
+    int n = toString(len,dest+3);
+    dest[3+n]='$';
+    memcpy(dest+4+n,src+4,len);
+    dest[4+n+len]='\r';
+    dest[5+n+len]='\n';
+    return 1;
 }
-char itochar(int n){
-    if(n>=0 && n<=9)
-        return n+0x30;
-    return 0x30;
+int toString(int n,char *out){
+    int len=0;
+    int aux=0;
+    char temp[10];
+
+    while(n){
+        temp[len++] =n%10;
+        n=n/10;
+    }
+    aux = len;
+    while(aux){
+        out[len-aux]=itochar(temp[aux-1]);
+        aux--;
+    }
+    return len;
 }
 /*
-    $<command>$<param_len>{param}\r\n
+    $<command>$<param_len>${param}\r\n
     GET key
-    $0$3key\r\n
+    $0$3$key\r\n
 
     $<command>$<param1_len>$<param2_len>{param1}{param2}\r\n
     SET key value
@@ -120,4 +147,10 @@ void trimSetArgs(char *s, char *kp,char *vp){
     *(aux+len)='\0';
     printf("value %s ", aux);
     memcpy(vp,aux,len);
+}
+
+char itochar(int n){
+    if(n>=0&&n<=9)
+        return n+0x30;
+    return 0x20;
 }

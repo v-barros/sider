@@ -40,8 +40,8 @@ void func(int sockfd)
     }
 }
 //read stdin, put the string at str and return string length
-//get abc\n
-//       8   
+//get key\n
+//return 7, put "get key" in buff   
 int read_command(char *buff){
     int n =0;
     while ((buff[n++] = getchar()) != '\n');
