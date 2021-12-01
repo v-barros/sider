@@ -25,27 +25,7 @@ char itochar(int n);
 // return -1
 int is_valid_get(char*c, int len){
     int i=0,aux =0;
-    char * key;
-    if(len>maxkeylength+4)
-        return -1;
 
-    while (i<3){
-        if(c[i]!=tolower(userCommandTable[0].name[i]))
-            return -1;
-        i++;
-    }
-    if(c[i++]!=' ')
-        return -1;
-    key =c+4;
-        
-    aux = len - 4; // 3 
-
-    i = 0;
-    while(i<aux){
-        if(*key+i == ' ')
-            return -1;
-        i++;
-    }
     return aux;    
 }
 
@@ -53,17 +33,6 @@ int is_valid_set(char*c,int len){
     return -1;
 }
 
-int encode_get(char *src,int len,char * dest){
-    dest[0]='$';
-    dest[1]='0';
-    dest[2]='$';   
-    int n = toString(len,dest+3);
-    dest[3+n]='$';
-    memcpy(dest+4+n,src+4,len);
-    dest[4+n+len]='\r';
-    dest[5+n+len]='\n';
-    return 1;
-}
 int toString(int n,char *out){
     int len=0;
     int aux=0;

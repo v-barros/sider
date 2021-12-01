@@ -20,18 +20,6 @@ int is_valid_get(char*c,int len);
 
 int is_valid_set(char*c,int len);
 
-
-/*
-    $<command>$<param_len>{param}\r\n
-    input: src=  GET key
-    output: $0$3key\r\n
-    src must be a valid get command, ex:
-    GET KEY
-    len is the length of key
-    dest is an empty array
-*/
-int encode_get(char *src,int len,char * dest);
-
 /*
 
     response
