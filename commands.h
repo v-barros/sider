@@ -1,3 +1,10 @@
+/*
+ * commands.h
+ *
+ *  Created on: 2021-11-21
+ *      Author: @v-barros
+ */
+
 #ifndef COMMANDS_H_
 #define COMMANDS_H_
 #define commands 2
@@ -28,12 +35,12 @@ int is_valid_set(char*c,int len);
 
 static const struct userCommand userCommandTable[commands]={
     {
-        "get",
+        "0",
         getFun,
         is_valid_get
     },
     {
-        "set",
+        "1",
         setFun,
         is_valid_set
     }

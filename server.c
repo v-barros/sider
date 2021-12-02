@@ -45,7 +45,7 @@ void run(int sockfd)
 int formatCommand(char * s){
     int i=0;
     for(;i<commands;i++){
-        if(strncmp(s,userCommandTable[i].name,3) ==0)
+        if(strncmp(s+1,userCommandTable[i].name,1) ==0)
         {
             return i;
         }
