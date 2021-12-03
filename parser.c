@@ -16,53 +16,36 @@ int trimGetArg(char * src,char *keyp){
     
     char * aux = src;
     int keylen = stoi(aux+3);
-    assert(keylen!=-1);
     aux = aux+3;
-
     while(*aux++!='$');
     memcpy(keyp,aux,keylen);
 }
 
+// $1$3$3$foobar\r\n
 void trimSetArgs(char *s, char *kp,char *vp){
-    char * p = s,*aux;
-    int len=0;
-    while(*p++!=' ');
-    aux = p;
+    char * p,*aux;
+    int klen=0,vlen=0;
+
+    klen = stoi(s+3);
+    p=s+3;
+    while(*p++!='$');
+    vlen = stoi(p);
+
+    while(*p++!='$');
     
-    while(*p++!=' '){
-        len++;
-    }
-    *(aux+len)='\0';
-    printf("key %s len %d", aux,len);
-    memcpy(kp,aux,len);
-    
-    aux = p;
-    len = 0;
-    while(*p++!='\0'){
-        len++;
-    }
-    *(aux+len)='\0';
-    printf("value %s ", aux);
-    memcpy(vp,aux,len);
+    memcpy(kp,p,klen);
+    p+=klen; 
+    memcpy(vp,p,vlen);
 }
 
 int stoi(char * str){
-    int n=0,i=0,temp=0,aux[7]; 
+    int n=0,i=0,temp=0; 
     int j=0;
-    bzero(aux,7);
-
-    do{ 
-        aux[i] = chartoi(str[i]);
-    }while(str[++i]!=0x24);
- 
-    i--;
-    temp = i;
-    // aux = 1  , 2  , 3  , -1 , 0  , 0  , 0
-    //       ^2 , ^1 , ^0
-    while (i>=0)
+    
+    while (*str!='$')
     {
-        n+= aux[i] * (ipow(10,temp - i));
-        i--;
+        n = (n*10)+(*str - '0');
+        str++;
     }
     return n;
 }

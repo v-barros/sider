@@ -54,6 +54,8 @@ void getFun(Table * table,char * args,struct serverReply * reply){
 void setFun(Table * table,char * args, struct serverReply * reply){
     char key[maxkeylength];
     char value[maxvaluelength];
+    memset(key,0,maxkeylength);
+    memset(value,0,maxkeylength);
     trimSetArgs(args,key,value);
     printf("SET key= \"%s\" value= \"%s\"",key,value);
     //if(put(table,key,value))
