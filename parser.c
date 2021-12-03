@@ -13,17 +13,15 @@
 #include <assert.h>
 
 int trimGetArg(char * src,char *keyp){
-    
-    char * aux = src;
-    int keylen = stoi(aux+3);
-    aux = aux+3;
-    while(*aux++!='$');
-    memcpy(keyp,aux,keylen);
+    int keylen = stoi(src+3);
+    src+=3;
+    while(*src++!='$');
+    memcpy(keyp,src,keylen);
+    return keylen;
 }
 
-// $1$3$3$foobar\r\n
 void trimSetArgs(char *s, char *kp,char *vp){
-    char * p,*aux;
+    char * p;
     int klen=0,vlen=0;
 
     klen = stoi(s+3);
@@ -39,8 +37,7 @@ void trimSetArgs(char *s, char *kp,char *vp){
 }
 
 int stoi(char * str){
-    int n=0,i=0,temp=0; 
-    int j=0;
+    int n=0; 
     
     while (*str!='$')
     {

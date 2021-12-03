@@ -65,5 +65,5 @@ void putOk(struct serverReply* rp){
 
 void putText(struct serverReply*rp, const char * text){
     rp->len = strlen(text);
-    memcpy(rp->text,text,rp->len);
+    rp->text = text; 
 }

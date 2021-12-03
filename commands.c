@@ -41,14 +41,13 @@ int is_valid_set(char*c,int len){
 
 void getFun(Table * table,char * args,struct serverReply * reply){
     char key[maxkeylength];
-    char * value;
+    const char * value;
     memset(key,0,maxkeylength);
     trimGetArg(args,key);
     printf("GET key= \"%s\"",key);
-  //  value = getValue(table,key);
-  //  printf(" value=\"%s\"", value);
-  //  putText(reply,key);
-    putOk(reply);
+    value = getValue(table,key);
+    printf(" value=\"%s\"", value);
+    putText(reply,value);
 }
 
 void setFun(Table * table,char * args, struct serverReply * reply){
@@ -58,9 +57,9 @@ void setFun(Table * table,char * args, struct serverReply * reply){
     memset(value,0,maxkeylength);
     trimSetArgs(args,key,value);
     printf("SET key= \"%s\" value= \"%s\"",key,value);
-    //if(put(table,key,value))
+    if(put(table,key,value))
         putOk(reply);
-    //else
-    //    putError(reply);
+    else
+       putError(reply);
 }
 

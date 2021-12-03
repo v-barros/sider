@@ -89,11 +89,6 @@ Node* lookup(Node * node, const char * key, unsigned long fullHash){
 	
 	do{
 		if(!(node->hash^fullHash)){
-			/*
-			*	It is kind of redundant, but considering there might be hundreds of nodes 
-			*	in a single position on table and comparison using integers is faster than using strings, 
-			*   with this aproach we can compare only a few strings even on worst case scenario.
-			*/
 			if(!(strcmp(node->key,key)))
 				return node;
 		}
@@ -120,7 +115,7 @@ uint32_t hashValidate(unsigned long fullHash){
 }
 
 const char * getValue(Table * table,const char * key){
-	if(table->numberOfEntries<=0) return 0;
+	if(table->numberOfEntries<=0) return "";
 	
 	unsigned long fullHash = hashGenerate(key);
 	uint32_t i = hashValidate(fullHash);
