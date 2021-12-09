@@ -20,7 +20,8 @@ void run(int sockfd)
     struct serverReply reply={"KO",2};
     for (;;) {
         putError(&reply);
-        bzero(buff, MAX);
+        
+        memset(buff,0,sizeof(buff));
         
         // read the message from client and copy it in buffer
         read(sockfd, buff, sizeof(buff));
@@ -30,7 +31,7 @@ void run(int sockfd)
         if(n!=-1){
             userCommandTable[n].execFunction(table,buff,&reply);            
          }
-        bzero(buff, MAX);
+        memset(buff,0,sizeof(buff));
         memcpy(buff,reply.text,reply.len);
         
         write(sockfd, buff, sizeof(buff));
