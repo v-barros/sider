@@ -11,6 +11,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <assert.h>
+#include <limits.h>
 
 int trimGetArg(char * src,char *keyp){
     int keylen = stoi(src+3);
@@ -37,13 +38,13 @@ void trimSetArgs(char *s, char *kp,char *vp){
 }
 
 int stoi(char * str){
-    int n=0; 
-    
-    while (*str!='$')
+    __uint32_t n=0; 
+    while (*str!='$' && n<INT_MAX)
     {
         n = (n*10)+(*str - '0');
         str++;
     }
-    return n;
+    if (n<INT_MAX)
+        return n;
+    return -1;
 }
-
