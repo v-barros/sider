@@ -34,7 +34,7 @@ int ipow(int base, int exp)
 int toString(int n,char *out){
     int len=0;
     int aux=0;
-    char temp[10];
+    char temp[11];
 
     while(n){
         temp[len++] =n%10;
