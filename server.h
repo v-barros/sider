@@ -14,20 +14,21 @@
 #include <string.h>
 #include <sys/socket.h>
 #include <sys/types.h>
-#define MAX 80
+#include <unistd.h>
+#define MAX 1024
 #define PORT 8080
 #define SA struct sockaddr
    
-struct serverReply {
+typedef struct serverReply {
     char * text; 
     int len;  
-};
+} serverReply;
 
-void putError(struct serverReply *);
+void putError(serverReply *);
 
-void putOk(struct serverReply*);
+void putOk(serverReply*);
 
-void putText(struct serverReply*, const char * text);
+void putText(serverReply*, const char * text);
 
 // Function designed for chat between client and server.
 void run(int sockfd);

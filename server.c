@@ -7,9 +7,14 @@
 #include "server.h"
 #include "ht.h"
 #include "commands.h"
+#include "utils.h"
+#include "assert.h"
 #define replies 2
 
 int formatCommand(char * s);
+
+serverReply * create_reply();
+
 Table* table;
 // Function designed for chat between client and server.
 void run(int sockfd)
@@ -17,9 +22,9 @@ void run(int sockfd)
     table = createTable();
     char buff[MAX];
     int n;
-    struct serverReply reply={"KO",2};
+    serverReply * reply= create_reply();
     for (;;) {
-        putError(&reply);
+        putError(reply);
         
         memset(buff,0,sizeof(buff));
         
@@ -29,10 +34,10 @@ void run(int sockfd)
         printf("\nFrom client: %s\t", buff);
         n = formatCommand(buff);
         if(n!=-1){
-            userCommandTable[n].execFunction(table,buff,&reply);            
+            userCommandTable[n].execFunction(table,buff,reply);            
          }
         memset(buff,0,sizeof(buff));
-        memcpy(buff,reply.text,reply.len);
+        memcpy(buff,reply->text,reply->len);
         
         write(sockfd, buff, sizeof(buff));
         // if msg contains "Exit" then server exit and chat ended.
@@ -54,17 +59,35 @@ int formatCommand(char * s){
     return -1;
 }
 
-void putError(struct serverReply * rp){
-    rp->text = "KO";
-    rp->len = 2;
+serverReply * create_reply(){
+    serverReply * sr = (serverReply *) malloc(sizeof(serverReply));
+    assert(sr!=NULL);
+    sr->text = (char *) malloc(1024);
+    assert(sr->text!=NULL);
+    sr->len=0;
+    return sr;
 }
 
-void putOk(struct serverReply* rp){
-    rp->text = "OK";
-    rp->len = 2;
+void putError(serverReply * rp){
+    char * s = "$2$KO\r\n";
+    memcpy(rp->text,s,7);
+    rp->len = 7;
 }
 
-void putText(struct serverReply*rp, const char * text){
-    rp->len = strlen(text);
-    rp->text = text; 
+void putOk(serverReply* rp){
+    char * s = "$2$OK\r\n";
+    memcpy(rp->text,s,7);
+    rp->len = 7;
+}
+//$3$val\r\n
+void putText(serverReply*rp, const char * text){
+    int aux,len = strlen(text);
+    *(rp->text)='$';
+    aux = toString(len,rp->text+1);
+    rp->text[aux+1]='$';
+
+    memcpy(rp->text+aux+2,text,len);
+
+    rp->text[aux+2+len]='\r';
+    rp->text[aux+3+len]='\n';
 }
