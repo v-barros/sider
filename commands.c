@@ -13,8 +13,8 @@
 #include <ctype.h>
 #include <assert.h>
 
-#define maxkeylength 110
-#define maxvaluelength 110
+#define maxkeylength 1000
+#define maxvaluelength 1000
 
 int is_valid_get(char*c, int len){
     return -1;    
@@ -48,6 +48,7 @@ void getFun(Table * table,char * args,struct serverReply * reply){
     value = getValue(table,key);
     printf(" value=\"%s\"", value);
     putText(reply,value);
+    removeByKey(table,key);
 }
 
 void setFun(Table * table,char * args, struct serverReply * reply){
@@ -58,8 +59,9 @@ void setFun(Table * table,char * args, struct serverReply * reply){
     trimSetArgs(args,key,value);
     printf("SET key= \"%s\" value= \"%s\"",key,value);
     if(put(table,key,value))
+       // putText(reply,value);
         putOk(reply);
     else
-       putError(reply);
+        putError(reply);
 }
 
