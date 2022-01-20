@@ -36,15 +36,10 @@ void run(int sockfd)
         if(n!=-1){
             userCommandTable[n].execFunction(table,buff,reply);            
          }
+        printf("\nResult: %s\n",reply->text);
         memset(buff,0,sizeof(buff));
         memcpy(buff,reply->text,reply->len);
-        
-        write(sockfd, buff, sizeof(buff));
-        // if msg contains "Exit" then server exit and chat ended.
-        if (strncmp("exit", buff, 4) == 0) {
-            printf("Server Exit...\n");
-            break;
-        }
+        write(sockfd, buff, reply->len);
     }
 }
 
@@ -81,6 +76,16 @@ void putOk(serverReply* rp){
 }
 //$3$val\r\n
 void putText(serverReply*rp, const char * text){
+    if(!text){
+        *(rp->text)='$';
+        *(rp->text+1)='-';
+        *(rp->text+2)='1';
+        *(rp->text+3)='$';
+        *(rp->text+4)='\r';
+        *(rp->text+5)='\n';
+        rp->len = 6;
+        return;
+    }
     int aux,len = strlen(text);
     *(rp->text)='$';
     aux = toString(len,rp->text+1);
@@ -90,4 +95,5 @@ void putText(serverReply*rp, const char * text){
 
     rp->text[aux+2+len]='\r';
     rp->text[aux+3+len]='\n';
+    rp->len = aux + 4+len;
 }

@@ -41,14 +41,15 @@ int is_valid_set(char*c,int len){
 
 void getFun(Table * table,char * args,struct serverReply * reply){
     char key[maxkeylength];
-    const char * value;
+    const char * value=NULL;
     memset(key,0,maxkeylength);
     trimGetArg(args,key);
     printf("GET key= \"%s\"",key);
     value = getValue(table,key);
-    printf(" value=\"%s\"", value);
-    putText(reply,value);
-    removeByKey(table,key);
+    if(value==NULL)
+        printf(" valu\n");
+    putOk(reply);
+    //putText(reply,value);
 }
 
 void setFun(Table * table,char * args, struct serverReply * reply){
