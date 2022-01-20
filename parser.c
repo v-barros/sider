@@ -39,12 +39,26 @@ void trimSetArgs(char *s, char *kp,char *vp){
 
 int stoi(char * str){
     __uint32_t n=0; 
-    while (*str!='$' && n<INT_MAX)
+    
+    if(*str=='-')
     {
-        n = (n*10)+(*str - '0');
         str++;
+        while (*str!='$' && n<INT_MAX)
+        {
+            n = (n*10)+(*str - '0');
+            str++;
+        }
+        if (n<INT_MAX)
+            return n*-1;
+    }else
+    {
+        while (*str!='$' && n<INT_MAX)
+        {
+            n = (n*10)+(*str - '0');
+            str++;
+        }
+        if (n<INT_MAX)
+            return n;
     }
-    if (n<INT_MAX)
-        return n;
-    return -1;
+    return INT_MAX;
 }
