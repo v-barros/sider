@@ -115,7 +115,7 @@ uint32_t hashValidate(unsigned long fullHash){
 }
 
 const char * getValue(Table * table,const char * key){
-	if(table->numberOfEntries<=0) return "";
+	if(table->numberOfEntries<=0) return NULL;
 	
 	unsigned long fullHash = hashGenerate(key);
 	uint32_t i = hashValidate(fullHash);
@@ -123,8 +123,9 @@ const char * getValue(Table * table,const char * key){
 	Node * checkNode = lookup(node,key,fullHash);
 	
 	if(checkNode==NULL)/*There is no such key on the table */
-		return "";
-
+		{
+			return NULL;
+	}
 	return checkNode->value;
 }
 
