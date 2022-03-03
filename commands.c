@@ -44,12 +44,11 @@ void getFun(Table * table,char * args,struct serverReply * reply){
     const char * value=NULL;
     memset(key,0,maxkeylength);
     trimGetArg(args,key);
-    printf("GET key= \"%s\"",key);
+    //printf("GET key= \"%s\"",key);
     value = getValue(table,key);
-    if(value==NULL)
-        printf(" valu\n");
-    putOk(reply);
-    //putText(reply,value);
+   // if(value!=NULL)
+        putText(reply,value);
+    
 }
 
 void setFun(Table * table,char * args, struct serverReply * reply){
@@ -58,7 +57,7 @@ void setFun(Table * table,char * args, struct serverReply * reply){
     memset(key,0,maxkeylength);
     memset(value,0,maxkeylength);
     trimSetArgs(args,key,value);
-    printf("SET key= \"%s\" value= \"%s\"",key,value);
+  //  printf("SET key= \"%s\" value= \"%s\"",key,value);
     if(put(table,key,value))
        // putText(reply,value);
         putOk(reply);
