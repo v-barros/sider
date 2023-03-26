@@ -16,6 +16,9 @@ int formatCommand(char * s);
 serverReply * create_reply();
 
 Table* table;
+
+int reply(const char * buff, int len);
+
 // Function designed for chat between client and server.
 void run(int sockfd)
 {
@@ -31,18 +34,22 @@ void run(int sockfd)
         // read the message from client and copy it in buffer
         long a = read(sockfd, buff, sizeof(buff));
         // print buffer which contains the client contents
-        printf("\n %ld From client: %s\t", a, buff);
+       // printf("\n %ld From client: %s\t", a, buff);
         if(a==0)
             break;
         n = formatCommand(buff);
         if(n!=-1){
             userCommandTable[n].execFunction(table,buff,reply);            
          }
-        printf("\nResult: %s\n",reply->text);
+     //   printf("\nResult: %s\n",reply->text);
         memset(buff,0,sizeof(buff));
         memcpy(buff,reply->text,reply->len);
         write(sockfd, buff, reply->len);
     }
+}
+
+int reply(const char * buff, int len){
+    return 1;
 }
 
 int formatCommand(char * s){
@@ -73,8 +80,8 @@ void putError(serverReply * rp){
 
 void putOk(serverReply* rp){
     char * s = "$2$OK\r\n";
-    memcpy(rp->text,s,7);
-    rp->len = 7;
+    memcpy(rp->text,s,8);
+    rp->len = 8;
 }
 //$3$val\r\n
 void putText(serverReply*rp, const char * text){
@@ -85,7 +92,7 @@ void putText(serverReply*rp, const char * text){
         *(rp->text+3)='$';
         *(rp->text+4)='\r';
         *(rp->text+5)='\n';
-        rp->len = 6;
+        rp->len = 7;
         return;
     }
     int aux,len = strlen(text);
@@ -97,5 +104,5 @@ void putText(serverReply*rp, const char * text){
 
     rp->text[aux+2+len]='\r';
     rp->text[aux+3+len]='\n';
-    rp->len = aux + 4+len;
+    rp->len = aux + 5+len;
 }
