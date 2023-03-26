@@ -29,9 +29,11 @@ void run(int sockfd)
         memset(buff,0,sizeof(buff));
         
         // read the message from client and copy it in buffer
-        read(sockfd, buff, sizeof(buff));
+        long a = read(sockfd, buff, sizeof(buff));
         // print buffer which contains the client contents
-        printf("\nFrom client: %s\t", buff);
+        printf("\n %ld From client: %s\t", a, buff);
+        if(a==0)
+            break;
         n = formatCommand(buff);
         if(n!=-1){
             userCommandTable[n].execFunction(table,buff,reply);            
