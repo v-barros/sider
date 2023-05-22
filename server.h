@@ -21,8 +21,14 @@
    
 typedef struct serverReply {
     char * text; 
-    int len;  
+    int len;
 } serverReply;
+
+typedef struct serverstr {
+    int port;
+    eventloop ev;
+    serverReply reply;
+} serverstr;
 
 void putError(serverReply *);
 
