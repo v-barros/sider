@@ -7,7 +7,7 @@
 
 #ifndef HASHTABLE_H_
 #define HASHTABLE_H_
-#define TABLE_SIZE 10
+#define TABLE_SIZE 100000
 #include <stdint.h>
 
 struct Node{
