@@ -6,7 +6,9 @@
  */
 #ifndef CONNECTION_H_
 #define CONNECTION_H_
-// set up new listening socket on fd using port
+
+
+// set up new NON BLOCKING listening socket using port and return socketfd
 int init_conn(int port);
 
 #endif // CONNECTION_H_

@@ -72,6 +72,6 @@ server_resp * create_resp(){
 int main(void){
     createSharedResps();
     serverConfInit();
-
+    runloop(server.ev);
     return 0;
 }

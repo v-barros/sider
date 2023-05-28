@@ -23,10 +23,10 @@ enum EVENT_STATUS{
 #define EVENT_OFF EVENT_OFF
 };
 typedef void event_handler (int,void*,long,void*);
-typedef struct sevent s_event;
+typedef struct fired_event fired_event;
 typedef struct _eventloop eventloop;
 
-struct sevent {
+struct fired_event{
     int fd;												//socket file descriptor
     int events;											// read or write
 	int status;											//whether there's a peding event or not
@@ -37,15 +37,16 @@ struct sevent {
 
 struct _eventloop{
     int epollfd;                                        //Global epoll file descriptor (returned by epoll create)
-    s_event events_t[EVENTS_MAX + 1];                    //Global events table
+    fired_event events_t[EVENTS_MAX + 1];                    //Global events table
 };
 
 
 /*event loop API functions*/
 eventloop * init_loop(int port);
-void event_set(s_event * ev, int fd, event_handler callback, void * arg,long time_now);
-void event_rm(s_event * ev, int fd);
-void event_add(s_event *ev, int fd, int event);
+void runloop(eventloop* event_loop);
+void event_set(fired_event * ev, int fd, event_handler callback, void * arg,long time_now);
+void event_rm(fired_event * ev, int fd);
+void event_add(fired_event *ev, int fd, int event);
 
 
 /*event handlers (callback functions)*/

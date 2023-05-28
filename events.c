@@ -7,7 +7,7 @@
 #include "eventloop.h"
 #define BUFFLEN 1024
 void read_data(int fd,void*arg,long time_now,void *event_loop){
-    s_event *aux_ev = (s_event*) arg;
+    fired_event *aux_ev = (fired_event*) arg;
     char buf[BUFFLEN];
     int len;
     len = read(fd,buf,sizeof(buf));
@@ -35,12 +35,12 @@ void read_data(int fd,void*arg,long time_now,void *event_loop){
     }
 }
 
-void accept_con(int fd,void*arg,long time_now,void *ev)
+void accept_con(int fd,void*arg,long time_now,void *event_loop)
 {
     struct sockaddr_in cin;
     socklen_t addr_len = sizeof(cin);
     int cfd, i;
-    eventloop * evloop=(eventloop*)ev;
+    eventloop * evloop=(eventloop*)event_loop;
 
     if ((cfd = accept(fd, (struct sockaddr *)&cin,&addr_len)) == -1) {
         printf("%s: accept, %s\n", __func__, strerror(errno));
@@ -48,7 +48,7 @@ void accept_con(int fd,void*arg,long time_now,void *ev)
     }
     //finds first available event on events table
     for (i = 0; i < EVENTS_MAX; i++){ 
-        s_event aux = evloop->events_t[i];
+        fired_event aux = evloop->events_t[i];
         if (aux.status == EVENT_OFF)                              
             break;       
     }
