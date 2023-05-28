@@ -11,7 +11,7 @@
 #include "ht.h"
 #include "server.h"
 
-typedef void fun(Table * table,char * args,struct serverReply*);
+typedef void fun(Table * table,char * args,struct server_resp*);
 typedef int valid(char * c,int len);
 
 struct userCommand{
@@ -19,9 +19,9 @@ struct userCommand{
     fun * execFunction;
     valid * is_valid;
 };
-void getFun(Table * table,char * args,struct serverReply*);
+void getFun(Table * table,char * args,struct server_resp*);
 
-void setFun(Table * table,char * args,struct serverReply*);
+void setFun(Table * table,char * args,struct server_resp*);
 
 int is_valid_get(char*c,int len);
 

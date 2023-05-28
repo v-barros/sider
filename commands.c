@@ -39,7 +39,7 @@ int is_valid_set(char*c,int len){
 */
 
 
-void getFun(Table * table,char * args,struct serverReply * reply){
+void getFun(Table * table,char * args,struct server_resp * reply){
     char key[maxkeylength];
     const char * value=NULL;
     memset(key,0,maxkeylength);
@@ -51,7 +51,7 @@ void getFun(Table * table,char * args,struct serverReply * reply){
     
 }
 
-void setFun(Table * table,char * args, struct serverReply * reply){
+void setFun(Table * table,char * args, struct server_resp * reply){
     char key[maxkeylength];
     char value[maxvaluelength];
     memset(key,0,maxkeylength);
