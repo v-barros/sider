@@ -25,7 +25,7 @@ void event_set(fired_event * ev, int fd, event_handler callback, void * arg,long
     ev->last_active = time_now;    
 }
 
-void event_rm(fired_event * ev, int fd){
+void event_rm(fired_event * ev, int epfd){
     struct epoll_event e_event = {0, {0}};
 
     if (ev->status == EVENT_OFF)                                        
@@ -33,10 +33,10 @@ void event_rm(fired_event * ev, int fd){
 
     e_event.data.ptr = ev;
     ev->status = EVENT_OFF;                                    
-    epoll_ctl(fd, EPOLL_CTL_DEL, ev->fd, &e_event);
+    epoll_ctl(epfd, EPOLL_CTL_DEL, ev->fd, &e_event);
 }
 
-void event_add(fired_event *ev, int fd, int event){
+void event_add(fired_event *ev, int epfd, int event){
     
     struct epoll_event e_event = {0, {0}};
     int op;
@@ -49,7 +49,7 @@ void event_add(fired_event *ev, int fd, int event){
         op = EPOLL_CTL_ADD;
         ev->status = EVENT_ON;
     }
-    if (epoll_ctl(fd, op, ev->fd, &e_event) < 0)
+    if (epoll_ctl(epfd, op, ev->fd, &e_event) < 0)
     {                   
         printf("%s: epoll_ctl, %s\n", __func__, strerror(errno));
     }
@@ -59,7 +59,8 @@ void runloop(eventloop* event_loop){
            
     int checkpos = 0, i;
     long now;
-    struct epoll_event aux_events[EVENTS_MAX+1];             
+    struct epoll_event aux_events[EVENTS_MAX+1];  
+    fired_event *ev;           
     while (1) {
         now=time(NULL);
        
@@ -72,12 +73,13 @@ void runloop(eventloop* event_loop){
         }
         
         for (i = 0; i < number_of_events; i++) {
-            fired_event *ev = (fired_event*)aux_events[i].data.ptr;  
+            ev = (fired_event*)aux_events[i].data.ptr;  
             if ((aux_events[i].events & EPOLLIN) && (ev->events & EPOLLIN))
+                ev->callback(ev->fd, ev->arg,now,event_loop);
+            if ((aux_events[i].events & EPOLLOUT) && (ev->events & EPOLLOUT))
                 ev->callback(ev->fd, ev->arg,now,event_loop);
         }
     }
-    return 0;
 }
 
 static inline void check_timeout(long now,int *checkpos,eventloop* event_loop){

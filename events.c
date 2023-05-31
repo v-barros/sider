@@ -12,6 +12,7 @@ void read_data(int fd,void*arg,long time_now,void *event_loop){
     int len;
     len = read(fd,buf,sizeof(buf));
     struct _eventloop * evloop = (eventloop*) event_loop;
+    event_rm(aux_ev,evloop->epollfd);
     if(len==0){
         event_rm(aux_ev,evloop->epollfd);
         close(fd);
@@ -23,16 +24,8 @@ void read_data(int fd,void*arg,long time_now,void *event_loop){
         printf("%s read(), error: %s\n",__func__,strerror(errno));
         return;
     }
-    
-    //At this point, the read data would be processed
-
-    if(write(fd,"OK",3)!=3){
-        event_rm(aux_ev,evloop->epollfd);
-        printf("failed to send all data\n");
-	    close(fd); /* failed to send all data at once, close */
-        aux_ev->last_active=time_now;
-        return;
-    }
+    event_set(aux_ev,fd,write_data,aux_ev,time_now);  
+    event_add(aux_ev,evloop->epollfd,EPOLLOUT);
 }
 
 void accept_con(int fd,void*arg,long time_now,void *event_loop)
@@ -69,4 +62,21 @@ void accept_con(int fd,void*arg,long time_now,void *event_loop)
 
     // adds the EPOLLIN event as the interested event for the newly createad connection (events_t[i]->fd)
     event_add(&evloop->events_t[i],evloop->epollfd, EPOLLIN);    
+}
+
+void write_data(int fd,void*arg,long time_now,void *event_loop){
+    fired_event *aux_ev = (fired_event*) arg;
+    struct _eventloop * evloop = (eventloop*) event_loop;
+    event_rm(aux_ev,evloop->epollfd);
+    if(write(fd,"OK",3)!=3){
+        event_rm(aux_ev,evloop->epollfd);
+        printf("failed to send all data\n");
+        close(fd); /* failed to send all data at once, close */
+        aux_ev->last_active=time_now;
+        return;
+    }
+    event_set(aux_ev,fd,read_data,aux_ev,time_now);  
+    event_add(aux_ev,evloop->epollfd,EPOLLIN);
+
+
 }

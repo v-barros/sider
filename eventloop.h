@@ -37,7 +37,7 @@ struct fired_event{
 
 struct _eventloop{
     int epollfd;                                        //Global epoll file descriptor (returned by epoll create)
-    fired_event events_t[EVENTS_MAX + 1];                    //Global events table
+    fired_event events_t[EVENTS_MAX + 1];               //Global events table
 };
 
 
@@ -45,13 +45,13 @@ struct _eventloop{
 eventloop * init_loop(int port);
 void runloop(eventloop* event_loop);
 void event_set(fired_event * ev, int fd, event_handler callback, void * arg,long time_now);
-void event_rm(fired_event * ev, int fd);
-void event_add(fired_event *ev, int fd, int event);
+void event_rm(fired_event * ev, int epfd);
+void event_add(fired_event *ev, int epfd, int event);
 
 
 /*event handlers (callback functions)*/
 
 void read_data(int fd,void*arg,long time_now,void* event_loop);
 void accept_con(int fd,void*arg,long time_now,void *event_loop);
-
+void write_data(int fd,void*arg,long time_now,void *event_loop);
 #endif
