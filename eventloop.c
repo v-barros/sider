@@ -1,6 +1,7 @@
 #include "eventloop.h"
 
 static inline void check_timeout(long now,int *checkpos,eventloop* event_loop);
+void set_mask(registered_event* ev,int mask);
 
 eventloop * init_loop(int port){
     int epollfd = epoll_create(EVENTS_MAX+1);
@@ -10,46 +11,61 @@ eventloop * init_loop(int port){
     ev->epollfd=epollfd;
     int socket = init_conn(port);
     printf("listening socket fd [%d]\n",socket);    
-    event_set(&ev->events_t[EVENTS_MAX], socket, accept_con, &ev->events_t[EVENTS_MAX],time(NULL));
-    event_add(&ev->events_t[EVENTS_MAX],ev->epollfd,EPOLLIN);
-    
+    event_create(ev,socket,accept_con,READABLE,time(NULL));
+    int i;
+    for(i=0;i<EVENTS_MAX;i++)
+        set_mask(&ev->events_t[i],NONE);
+    ev->setsize=EVENTS_MAX;
     return ev;
 }
 
-void event_set(fired_event * ev, int fd, event_handler callback, void * arg,long time_now){
-    ev->fd = fd;
-    ev->callback = callback;
-    ev->events = 0;
-    ev->arg = arg;
-    ev->status = EVENT_OFF;
-    ev->last_active = time_now;    
+void set_mask(registered_event* ev,int mask){
+    ev->mask=mask;
 }
 
-void event_rm(fired_event * ev, int epfd){
+void event_create(eventloop *event_loop,int event_fd, event_handler callback,int mask,long time_now){
+    
+    registered_event *ev = &event_loop->events_t[event_fd];
+    ev->fd=event_fd;
+    ev->last_active=time_now;
+    ev->mask=mask;
+    
+    event_add(ev->fd,event_loop,mask);
+
+    if(mask & READABLE) 
+        ev->read_event_handler=callback;
+    if(mask & WRITEABLE) 
+        ev->write_event_handler=callback;
+
+    if (event_fd > event_loop->maxfd)
+        event_loop->maxfd=event_fd;
+}
+
+void event_rm(registered_event * ev, int epfd){
     struct epoll_event e_event = {0, {0}};
 
-    if (ev->status == EVENT_OFF)                                        
+    if (ev->mask == NONE)                                        
         return ;
 
-    e_event.data.ptr = ev;
-    ev->status = EVENT_OFF;                                    
+    e_event.data.fd=ev->fd;
+
     epoll_ctl(epfd, EPOLL_CTL_DEL, ev->fd, &e_event);
 }
 
-void event_add(fired_event *ev, int epfd, int event){
+void event_add(int event_fd,eventloop* eventLoop, int mask){
     
     struct epoll_event e_event = {0, {0}};
-    int op;
-    e_event.data.ptr = ev;
-    e_event.events = ev->events = event;    //EPOLLIN or EPOLLOUT
+    int op = eventLoop->events_t[event_fd].mask == NONE ?
+            EPOLL_CTL_ADD : EPOLL_CTL_MOD;
 
-    if (ev->status == EVENT_ON) {                                          
-        op = EPOLL_CTL_MOD;
-    } else {                   
-        op = EPOLL_CTL_ADD;
-        ev->status = EVENT_ON;
-    }
-    if (epoll_ctl(epfd, op, ev->fd, &e_event) < 0)
+    if(mask & WRITEABLE)
+        e_event.events = EPOLLOUT;    //EPOLLIN or EPOLLOUT
+    if(mask & READABLE)
+        e_event.events = EPOLLIN;    //EPOLLIN or EPOLLOUT
+
+    e_event.data.fd=event_fd;
+
+    if (epoll_ctl(eventLoop->epollfd, op, e_event.data.fd, &e_event) < 0)
     {                   
         printf("%s: epoll_ctl, %s\n", __func__, strerror(errno));
     }
@@ -73,11 +89,11 @@ void runloop(eventloop* event_loop){
         }
         
         for (i = 0; i < number_of_events; i++) {
-            ev = (fired_event*)aux_events[i].data.ptr;  
-            if ((aux_events[i].events & EPOLLIN) && (ev->events & EPOLLIN))
-                ev->callback(ev->fd, ev->arg,now,event_loop);
-            if ((aux_events[i].events & EPOLLOUT) && (ev->events & EPOLLOUT))
-                ev->callback(ev->fd, ev->arg,now,event_loop);
+          //  ev = (fired_event*)aux_events[i].data.ptr;  
+         //   if ((aux_events[i].events & EPOLLIN) && (ev->events & EPOLLIN))
+               // ev->callback(ev->fd, ev->arg,now,event_loop);
+          //  if ((aux_events[i].events & EPOLLOUT) && (ev->events & EPOLLOUT))
+              //  ev->callback(ev->fd, ev->arg,now,event_loop);
         }
     }
 }
@@ -87,7 +103,7 @@ static inline void check_timeout(long now,int *checkpos,eventloop* event_loop){
     int ck = *checkpos;
     for (i = 0; i < 50; i++, ck++) {
             ck%=EVENTS_MAX;
-            if (event_loop->events_t[ck].status == EVENT_OFF){
+            if (event_loop->events_t[ck].mask == NONE){
                 continue;
             }        
             long duration = now - event_loop->events_t[ck].last_active;       

@@ -16,38 +16,46 @@
 #include "connection.h"
 #define PORT 8080
 #define EVENTS_MAX 1024
-enum EVENT_STATUS{
-	EVENT_ON = 1,
-#define EVENT_ON EVENT_ON
-    EVENT_OFF = 0
-#define EVENT_OFF EVENT_OFF
-};
+#define NONE 0
+#define READABLE 1
+#define WRITEABLE 2
+
 typedef void event_handler (int,void*,long,void*);
 typedef struct fired_event fired_event;
+typedef struct registered_event registered_event;
 typedef struct _eventloop eventloop;
 
-struct fired_event{
-    int fd;												//socket file descriptor
-    int events;											// read or write
-	int status;											//whether there's a peding event or not
+struct registered_event{
+	int fd;                                             //fd used for both socket handling and indexing in registered_events array
+    int mask;											//event mask might be WRITEABLE, READABLE or NONE for unmonitored events
     long last_active;									//Record the timestamp of each event
-    event_handler *callback;							//Callback function (accept_con,read_data and write_data)
-    void *arg;
+    event_handler *read_event_handler;					//Callback function (accept_con,read_data)
+    event_handler *write_event_handler;					//Callback function (write_data)
+}; 
+
+/* struct used to pass the minimum information
+   required to interact with the epoll instance.
+   */
+struct fired_event{
+    int fd;                                             //fd used for both socket handling and indexing in registered_events array
+	int mask;											//event mask might be writeable, readable or none for unmonitored events
 };
 
 struct _eventloop{
     int epollfd;                                        //Global epoll file descriptor (returned by epoll create)
-    fired_event events_t[EVENTS_MAX + 1];               //Global events table
+    int maxfd;                                          /* highest file descriptor currently registered */
+    int setsize;                                        /* max number of file descriptors tracked */
+    registered_event events_t[EVENTS_MAX + 1];          //Global events table
+    fired_event fired_events_t[EVENTS_MAX+1]; 
 };
 
-
 /*event loop API functions*/
+
 eventloop * init_loop(int port);
 void runloop(eventloop* event_loop);
-void event_set(fired_event * ev, int fd, event_handler callback, void * arg,long time_now);
-void event_rm(fired_event * ev, int epfd);
-void event_add(fired_event *ev, int epfd, int event);
-
+void event_create(eventloop *event_loop,int event_fd, event_handler callback,int mask,long time_now);
+void event_rm(registered_event * ev, int epfd);
+void event_add(int event_fd,eventloop* eventLoop, int mask);
 
 /*event handlers (callback functions)*/
 
