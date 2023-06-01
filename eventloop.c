@@ -10,11 +10,13 @@ eventloop * init_loop(int port){
         abort();
     ev->epollfd=epollfd;
     int socket = init_conn(port);
-    printf("listening socket fd [%d]\n",socket);    
-    event_create(ev,socket,accept_con,READABLE,time(NULL));
+    printf("listening socket fd [%d]\n",socket);   
     int i;
-    for(i=0;i<EVENTS_MAX;i++)
+    for(i=0;i<EVENTS_MAX;i++){
         set_mask(&ev->events_t[i],NONE);
+    }
+    event_create(ev,socket,accept_con,READABLE,time(NULL));
+    
     ev->setsize=EVENTS_MAX;
     return ev;
 }
@@ -24,14 +26,12 @@ void set_mask(registered_event* ev,int mask){
 }
 
 void event_create(eventloop *event_loop,int event_fd, event_handler callback,int mask,long time_now){
-    
     registered_event *ev = &event_loop->events_t[event_fd];
     ev->fd=event_fd;
     ev->last_active=time_now;
-    ev->mask=mask;
     
     event_add(ev->fd,event_loop,mask);
-
+    ev->mask=mask;
     if(mask & READABLE) 
         ev->read_event_handler=callback;
     if(mask & WRITEABLE) 
@@ -53,17 +53,15 @@ void event_rm(registered_event * ev, int epfd){
 }
 
 void event_add(int event_fd,eventloop* eventLoop, int mask){
-    
     struct epoll_event e_event = {0, {0}};
-    int op = eventLoop->events_t[event_fd].mask == NONE ?
-            EPOLL_CTL_ADD : EPOLL_CTL_MOD;
-
+    int op = eventLoop->events_t[event_fd].mask == NONE ? EPOLL_CTL_ADD : EPOLL_CTL_MOD;
     if(mask & WRITEABLE)
         e_event.events = EPOLLOUT;    //EPOLLIN or EPOLLOUT
     if(mask & READABLE)
         e_event.events = EPOLLIN;    //EPOLLIN or EPOLLOUT
 
     e_event.data.fd=event_fd;
+    printf("event add OK [fd=%d], op=%d, events[%0X]\n", e_event.data.fd, op, e_event.events);
 
     if (epoll_ctl(eventLoop->epollfd, op, e_event.data.fd, &e_event) < 0)
     {                   
@@ -75,20 +73,30 @@ void runloop(eventloop* event_loop){
            
     int checkpos = 0, i;
     long now;
-    struct epoll_event aux_events[EVENTS_MAX+1];  
-    fired_event *ev;           
+    registered_event *ev;           
+    int triggeredfd;
+    int mask;
     while (1) {
         now=time(NULL);
        
         check_timeout(now,&checkpos,event_loop);
 
-        int number_of_events = epoll_wait(event_loop->epollfd, aux_events, EVENTS_MAX+1, 20);
+        int number_of_events = epoll_wait(event_loop->epollfd, event_loop->fired_events_t, EVENTS_MAX+1, 20);
         if (number_of_events < 0) {
             printf("epoll_wait error, exit\n");
             break;
         }
         
+
         for (i = 0; i < number_of_events; i++) {
+            triggeredfd = event_loop->fired_events_t[i].data.fd;
+            ev =  &event_loop->events_t[triggeredfd];
+            mask= event_loop->fired_events_t[i].events;
+
+            if(mask==EPOLLIN)
+                ev->read_event_handler(ev->fd,ev,now,event_loop);
+            if(mask==EPOLLOUT)
+                ev->write_event_handler(ev->fd,ev,now,event_loop);
           //  ev = (fired_event*)aux_events[i].data.ptr;  
          //   if ((aux_events[i].events & EPOLLIN) && (ev->events & EPOLLIN))
                // ev->callback(ev->fd, ev->arg,now,event_loop);

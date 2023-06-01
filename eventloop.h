@@ -46,7 +46,7 @@ struct _eventloop{
     int maxfd;                                          /* highest file descriptor currently registered */
     int setsize;                                        /* max number of file descriptors tracked */
     registered_event events_t[EVENTS_MAX + 1];          //Global events table
-    fired_event fired_events_t[EVENTS_MAX+1]; 
+    struct epoll_event fired_events_t[EVENTS_MAX+1]; 
 };
 
 /*event loop API functions*/

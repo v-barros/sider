@@ -13,7 +13,7 @@ void read_data(int fd,void*arg,long time_now,void *event_loop){
     len = read(fd,buf,sizeof(buf));
     struct _eventloop * evloop = (eventloop*) event_loop;
    // event_rm(aux_ev,evloop->epollfd);
-    printf(" read\n");
+   // printf(" read\n");
     if(len==0){
         event_rm(aux_ev,evloop->epollfd);
         close(fd);
@@ -39,12 +39,15 @@ void accept_con(int fd,void*arg,long time_now,void *event_loop)
         printf("%s: accept, %s\n", __func__, strerror(errno));
         return ;
     }
+    registered_event aux;
     //finds first available event on events table
-    for (i = 0; i < EVENTS_MAX; i++){ 
-        registered_event aux = evloop->events_t[i];
+   
+   /* for (i = 0; i < EVENTS_MAX; i++){ 
+        aux = evloop->events_t[i];
         if (aux.mask == NONE)                              
             break;       
     }
+    */
     if (i == EVENTS_MAX) {
         printf("%s: connection overflow [%d]\n", __func__, EVENTS_MAX);
         return;
