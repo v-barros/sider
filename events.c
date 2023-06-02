@@ -12,8 +12,8 @@ void read_data(int fd,void*arg,long time_now,void *event_loop){
     int len;
     len = read(fd,buf,sizeof(buf));
     struct _eventloop * evloop = (eventloop*) event_loop;
-   // event_rm(aux_ev,evloop->epollfd);
-   // printf(" read\n");
+
+
     if(len==0){
         event_rm(aux_ev,evloop->epollfd);
         close(fd);
@@ -60,12 +60,12 @@ void accept_con(int fd,void*arg,long time_now,void *event_loop)
         return;
     }
     event_create(evloop,cfd,read_data,READABLE,time(NULL)); 
+    printf("new connection at fd %d\n",cfd);
 }
 
 void write_data(int fd,void*arg,long time_now,void *event_loop){
     registered_event *aux_ev = (registered_event*) arg;
     struct _eventloop * evloop = (eventloop*) event_loop;
-   // event_rm(aux_ev,evloop->epollfd);
     if(write(fd,"OK",3)!=3){
         event_rm(aux_ev,evloop->epollfd);
         printf("failed to send all data\n");
@@ -74,6 +74,5 @@ void write_data(int fd,void*arg,long time_now,void *event_loop){
         return;
     }
     event_create(evloop,fd,read_data,READABLE,time(NULL));
-
 
 }

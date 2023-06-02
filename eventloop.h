@@ -45,6 +45,7 @@ struct _eventloop{
     int epollfd;                                        //Global epoll file descriptor (returned by epoll create)
     int maxfd;                                          /* highest file descriptor currently registered */
     int setsize;                                        /* max number of file descriptors tracked */
+    int socketfd;
     registered_event events_t[EVENTS_MAX + 1];          //Global events table
     struct epoll_event fired_events_t[EVENTS_MAX+1]; 
 };

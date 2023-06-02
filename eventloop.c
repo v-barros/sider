@@ -1,5 +1,5 @@
 #include "eventloop.h"
-
+#define TIMEOUT 5
 static inline void check_timeout(long now,int *checkpos,eventloop* event_loop);
 void set_mask(registered_event* ev,int mask);
 
@@ -16,7 +16,7 @@ eventloop * init_loop(int port){
         set_mask(&ev->events_t[i],NONE);
     }
     event_create(ev,socket,accept_con,READABLE,time(NULL));
-    
+    ev->socketfd=socket;
     ev->setsize=EVENTS_MAX;
     return ev;
 }
@@ -43,13 +43,23 @@ void event_create(eventloop *event_loop,int event_fd, event_handler callback,int
 
 void event_rm(registered_event * ev, int epfd){
     struct epoll_event e_event = {0, {0}};
-
+    
     if (ev->mask == NONE)                                        
         return ;
-
+    
     e_event.data.fd=ev->fd;
+    if(ev->mask & WRITEABLE)
+        e_event.events = EPOLLOUT;    //EPOLLIN or EPOLLOUT
+    if(ev->mask & READABLE)
+        e_event.events = EPOLLIN;    //EPOLLIN or EPOLLOUT
 
-    epoll_ctl(epfd, EPOLL_CTL_DEL, ev->fd, &e_event);
+    ev->mask=NONE;
+    printf("event RM OK [fd=%d], op=%d, events[%0X]\n", e_event.data.fd, EPOLL_CTL_DEL, e_event.events);
+
+    if(epoll_ctl(epfd, EPOLL_CTL_DEL, ev->fd, &e_event)==0)
+        close(ev->fd);
+
+
 }
 
 void event_add(int event_fd,eventloop* eventLoop, int mask){
@@ -107,15 +117,18 @@ void runloop(eventloop* event_loop){
 }
 
 static inline void check_timeout(long now,int *checkpos,eventloop* event_loop){
-    int i;
+    int i,socket_pos;
     int ck = *checkpos;
+    int timeout=TIMEOUT;
+    socket_pos=event_loop->socketfd;
     for (i = 0; i < 50; i++, ck++) {
             ck%=EVENTS_MAX;
-            if (event_loop->events_t[ck].mask == NONE){
+            
+            if (event_loop->events_t[ck].mask == NONE || ck==socket_pos){
                 continue;
-            }        
+            }
             long duration = now - event_loop->events_t[ck].last_active;       
-            if (duration >= 30L) {
+            if (duration >= timeout) {
                 close(event_loop->events_t[ck].fd);                           
                 printf("[fd=%d] timeout\n", event_loop->events_t[ck].fd);
                 event_rm(&event_loop->events_t[ck],event_loop->epollfd);                   
