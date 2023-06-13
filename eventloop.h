@@ -14,7 +14,6 @@
 #include <time.h>
 #include "server.h"
 #include "connection.h"
-#define PORT 8080
 #define EVENTS_MAX 1024
 #define NONE 0
 #define READABLE 1
@@ -34,8 +33,7 @@ struct registered_event{
 }; 
 
 /* struct used to pass the minimum information
-   required to interact with the epoll instance.
-   */
+   required to interact with the epoll instance.*/
 struct fired_event{
     int fd;                                             //fd used for both socket handling and indexing in registered_events array
 	int mask;											//event mask might be writeable, readable or none for unmonitored events
@@ -43,11 +41,11 @@ struct fired_event{
 
 struct _eventloop{
     int epollfd;                                        //Global epoll file descriptor (returned by epoll create)
-    int maxfd;                                          /* highest file descriptor currently registered */
-    int setsize;                                        /* max number of file descriptors tracked */
-    int socketfd;
-    registered_event events_t[EVENTS_MAX + 1];          //Global events table
-    struct epoll_event fired_events_t[EVENTS_MAX+1]; 
+    int maxfd;                                          //highest file descriptor currently registered
+    int setsize;                                        //max number of file descriptors tracked
+    int socketfd;                                       //socket file descriptor created for the LISTENING port
+    registered_event events_t[EVENTS_MAX + 1];          //Global registered events table
+    struct epoll_event fired_events_t[EVENTS_MAX+1];    //aux epoll_event vector to store fired events returned in epoll_wait
 };
 
 /*event loop API functions*/

@@ -10,7 +10,6 @@
 #include "utils.h"
 #include "assert.h"
 #define replies 2
-#define REPLYMAX 1024
 //#define PORT 8000
 
 /*Global server*/
@@ -63,9 +62,8 @@ int formatCommand(char * s){
 server_resp * create_resp(){
     server_resp * sr = (server_resp *) malloc(sizeof(server_resp));
     assert(sr!=NULL);
-    sr->text = (char *) malloc(REPLYMAX);
-    assert(sr->text!=NULL);
-    sr->len=0;
+    sr->bufpos=0;
+    sr->buflen=OUTPUT_BUF_LEN;
     return sr;
 }
 

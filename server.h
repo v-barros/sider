@@ -17,9 +17,8 @@
 #include <unistd.h>
 #include "eventloop.h"
 #include "string.h"
-#define MAX 1024
-#define PORT 8080
-
+#define PORT 1234
+#define OUTPUT_BUF_LEN 16*1024
 typedef struct server_resp server_resp;
 typedef struct server_str server_str;
 typedef struct shared_resp shared_resp;
@@ -35,8 +34,9 @@ struct shared_resp{
 };
 
 struct server_resp {
-    char * text; 
-    int len;
+    int bufpos;
+    int buflen;
+    char buffer[OUTPUT_BUF_LEN]; 
 };
 
 struct server_str {
