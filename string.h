@@ -7,10 +7,12 @@ struct string {
     int len;
 };
 
-String *_new(char *);
-String * _newl(char *, int );
+String *_new(const char *);
+String * _newl(const char *, int );
+String * _newNull();
+int _sprintf(String *,const char*,...);
 char * get(String*);
-void * set(String*);
+void * set(String**,const char*);
 int len(String*);
 
 #endif // STRING_H_
