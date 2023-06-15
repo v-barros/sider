@@ -63,8 +63,29 @@ void addReplyOrErrorObject(server_resp *rp, const char *reply);
 void addReplyError(server_resp *rp, const char *err);
 void addReplyStatus(server_resp *rp, const char *status);
 void addReplyDouble(server_resp *rp, double d);
+
+/* Add a long long as integer reply or bulk len / multi bulk count.
+ * Basically this is used to output <prefix><long long><crlf>. */
 void addReplyLongLongWithPrefix(server_resp *rp, long long ll, char prefix){
-    return;
+    char buf[128];
+    int len;
+
+    /* Things like $3\r\n or *2\r\n are emitted very often by the protocol
+     * so we have a few shared objects to use if the integer is small
+     * like it is most of the times. */
+    if (prefix == '*' && ll < OBJ_SHARED_BULKHDR_LEN && ll >= 0) {
+        addReply(rp,shared.mbulkhdr[ll]->text);
+        return;
+    } else if (prefix == '$' && ll < OBJ_SHARED_BULKHDR_LEN && ll >= 0) {
+        addReply(rp,shared.bulkhdr[ll]->text);
+        return;
+    }
+
+    buf[0] = prefix;
+   // len = ll2string(buf+1,sizeof(buf)-1,ll);
+    buf[len+1] = '\r';
+    buf[len+2] = '\n';
+   // addReplyProto(rp,buf,len+3);
 }
 void addReplyBigNum(server_resp *rp, const char* num, size_t len);
 void addReplyHumanLongDouble(server_resp *rp, long double d);
