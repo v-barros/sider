@@ -12,6 +12,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <assert.h>
+#include "resp_parser.h"
 
 #define maxkeylength 1000
 #define maxvaluelength 1000
@@ -47,7 +48,7 @@ void getFun(Table * table,char * args,struct server_resp * reply){
     //printf("GET key= \"%s\"",key);
     value = getValue(table,key);
    // if(value!=NULL)
-        putText(reply,value);
+    putText(reply,value);
     
 }
 
@@ -60,8 +61,9 @@ void setFun(Table * table,char * args, struct server_resp * reply){
   //  printf("SET key= \"%s\" value= \"%s\"",key,value);
     if(put(table,key,value))
        // putText(reply,value);
-        putOk(reply);
+        addReplyBool(reply,1);
     else
-        putError(reply);
+        addReplyBool(reply,0);
+
 }
 

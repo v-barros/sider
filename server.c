@@ -33,6 +33,9 @@ void createSharedResps(){
     shared.crlf=_new("\r\n");
     shared.ok=_new("+OK\r\n");
     shared.plus=_new("+");
+    shared.cone=_new(":1\r\n");
+    shared.czero=_new(":0\r\n");
+
 }
 
 void serverConfInit(){

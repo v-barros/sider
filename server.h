@@ -30,7 +30,7 @@ extern struct server_str server;
 extern struct shared_resp shared;
 
 struct shared_resp{
-    String *ok,*crlf,*plus;
+    String *ok,*crlf,*plus,*cone,*czero;
 };
 
 struct server_resp {

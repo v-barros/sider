@@ -2,7 +2,10 @@
 #define STRING_H_
 
 typedef struct string String;
-
+struct string {
+    char * text;
+    int len;
+};
 
 String *_new(char *);
 String * _newl(char *, int );

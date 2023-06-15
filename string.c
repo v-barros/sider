@@ -2,11 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-struct string {
-    char * text;
-    int len;
-};
-
 String *_new(char * p){
     return _newl(p,strlen(p));
 }
@@ -16,6 +11,7 @@ String * _newl(char *p, int len){
     if(!s)
         abort();
     s->text = (char*)calloc(1,len+1);
+
     if(!s->text)
         abort();
     strcpy(s->text,p);
