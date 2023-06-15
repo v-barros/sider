@@ -19,6 +19,8 @@
 #include "string.h"
 #define PORT 1234
 #define OUTPUT_BUF_LEN 16*1024
+#define OBJ_SHARED_BULKHDR_LEN 32
+
 typedef struct server_resp server_resp;
 typedef struct server_str server_str;
 typedef struct shared_resp shared_resp;
@@ -30,7 +32,9 @@ extern struct server_str server;
 extern struct shared_resp shared;
 
 struct shared_resp{
-    String *ok,*crlf,*plus,*cone,*czero;
+    String *ok,*crlf,*plus,*cone,*czero,
+    *bulkhdr[OBJ_SHARED_BULKHDR_LEN],
+    *mbulkhdr[OBJ_SHARED_BULKHDR_LEN];
 };
 
 struct server_resp {
