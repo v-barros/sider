@@ -12,7 +12,7 @@ String * _newl(const char *, int );
 String * _newNull();
 int _sprintf(String *,const char*,...);
 char * get(String*);
-void * set(String**,const char*);
+void * set(String*,const char*);
 int len(String*);
 
 #endif // STRING_H_

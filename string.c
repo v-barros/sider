@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdarg.h>
+#include <assert.h>
 
 int _sprintf_internal(String * s,const char * fmt,va_list ap);
 
@@ -35,11 +36,24 @@ char * get(String* s){
     return s->text;
 }
 
-void * set(String **s,const char * str){
-    if((*s)->text)
-        free((*s)->text);
-    (*s)->len=0;
-    s = _new(str);
+/*
+    change content in s.
+    expects a pointer of String
+    discard content in s and copy content from str
+
+*/
+void * set(String *s,const char * str){
+    if(s->text)
+        free(s->text);
+    s->len=0;
+
+
+    int len = strlen(str);
+    s->text = (char*)calloc(1,len+1);
+    assert(s->text);
+    memcpy(s->text,str,len);
+    s->text[len]='\0';
+    s->len=len;
 }
 
 
@@ -47,24 +61,41 @@ int len(String* s){
     return s->len;
 }
 
+/*
+    Higher level function to perform sprintf-like operation with string structure
+    return string lengh or NULL in case string doesn't exists.
+    ex:
+        _sprint(str,"Long: %ll\n",mylongvar);
+    
+    _sprintf will copy the result of a standard sprintf() call into s->text, discarding the current content at s->text.
+*/
 int _sprintf(String *s,const char* fmt,...){
     va_list ap;
     va_start(ap, fmt);
 
-
     if(!s)
-        return NULL;
+        return -1;
     if(s->len>0)
         free(s->text);
     
     size_t len = strlen(fmt);
-
-    s->text = (char*)calloc(1,len+1);
-
+   
     va_end(ap);
     return _sprintf_internal(s,fmt,ap);
 }
 
+
+/*
+    Lower level function to perform printf-like operation to format the string structure with the given format
+    Expects va_list instead of being variadic
+    return string lengh or -1.
+    ex:
+        _sprint(str,"Long: %ll\n",mylongvar);
+
+    implements the internal interation with vsnprintf() using a STATIC BUFFER of length 1024, that means
+    the formatted result cannot be bigger than that.
+       
+*/
 int _sprintf_internal(String * s,const char * fmt,va_list ap){
     va_list cpy;
     char staticbuf[1024];
@@ -78,14 +109,16 @@ int _sprintf_internal(String * s,const char * fmt,va_list ap){
     va_end(cpy);
 
     if (bufstrlen < 0)
-        return NULL;
+        return -1;
     if (((size_t)bufstrlen) >= buflen) 
-        return NULL;
-
-  
-  
-    s->text = (char *) malloc(bufstrlen);
-
+        return -1;
+    
+    
+    s->text = (char*)calloc(1,bufstrlen+1);
+    assert(s->text);
+    
     memcpy(s->text,staticbuf,bufstrlen);
+    s->len=bufstrlen;
+    s->text[bufstrlen]='\0';
     return bufstrlen;
 }
