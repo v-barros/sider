@@ -11,17 +11,19 @@
 #include "ht.h"
 #include "server.h"
 
-typedef void fun(Table * table,char * args,struct server_resp*);
-typedef int valid(char * c,int len);
+typedef struct siderCommand siderCommand;
+typedef void command_proc(Table *,char * ,server_resp*);
 
-struct userCommand{
+typedef int command_get_keys(siderCommand *cmd, char **argv, int argc, getKeysResult *result);
+
+struct siderCommand{
     char *name;
-    fun * execFunction;
-    valid * is_valid;
+    command_proc *proc;
+    command_get_keys *getKeys;
 };
-void getFun(Table * table,char * args,struct server_resp*);
+void getCommand(Table * table,char * args,server_resp*);
 
-void setFun(Table * table,char * args,struct server_resp*);
+void setCommand(Table * table,char * args,server_resp*);
 
 int is_valid_get(char*c,int len);
 
@@ -33,16 +35,14 @@ int is_valid_set(char*c,int len);
     $<response_len>{response}\r\n
 */
 
-static const struct userCommand userCommandTable[COMMANDS]={
+static const struct siderCommand userCommandTable[COMMANDS]={
     {
         "get",
-        getFun,
-        is_valid_get
+        getCommand
     },
     {
         "set",
-        setFun,
-        is_valid_set
+        setCommand
     }
 };
 

@@ -87,7 +87,6 @@ void runloop(eventloop* event_loop){
     int triggeredfd;
     int mask;
 
-    printf("%s\n",shared.bulkhdr[1]->text);
     while (1) {
         now=time(NULL);
        

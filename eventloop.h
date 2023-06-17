@@ -27,7 +27,10 @@ typedef struct _eventloop eventloop;
 struct registered_event{
 	int fd;                                             //fd used for both socket handling and indexing in registered_events array
     int mask;											//event mask might be WRITEABLE, READABLE or NONE for unmonitored events
+    int argc;                                           //argument count (from command input)
     long last_active;									//Record the timestamp of each event
+    char **argv;                                        //argument vector (command keys and flags) 
+    siderCommand * cmd;                                 //command to be processed
     event_handler *read_event_handler;					//Callback function (accept_con,read_data)
     event_handler *write_event_handler;					//Callback function (write_data)
 }; 
