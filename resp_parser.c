@@ -82,10 +82,10 @@ void addReplyLongLongWithPrefix(server_resp *rp, long long ll, char prefix){
     }
 
     buf[0] = prefix;
-   // len = ll2string(buf+1,sizeof(buf)-1,ll);
+    len = ll2string(buf+1,sizeof(buf)-1,ll);
     buf[len+1] = '\r';
     buf[len+2] = '\n';
-   // addReplyProto(rp,buf,len+3);
+    addReplyLen(rp,buf,len+3);
 }
 void addReplyBigNum(server_resp *rp, const char* num, size_t len);
 void addReplyHumanLongDouble(server_resp *rp, long double d);

@@ -55,4 +55,6 @@ void createSharedResps();
 
 server_resp * create_resp();
 
+int formatCommand(char * s);
+
 #endif // SERVER_H_

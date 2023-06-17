@@ -7,7 +7,7 @@
 
 #ifndef COMMANDS_H_
 #define COMMANDS_H_
-#define commands 2
+#define COMMANDS 2
 #include "ht.h"
 #include "server.h"
 
@@ -33,14 +33,14 @@ int is_valid_set(char*c,int len);
     $<response_len>{response}\r\n
 */
 
-static const struct userCommand userCommandTable[commands]={
+static const struct userCommand userCommandTable[COMMANDS]={
     {
-        "0",
+        "get",
         getFun,
         is_valid_get
     },
     {
-        "1",
+        "set",
         setFun,
         is_valid_set
     }

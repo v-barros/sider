@@ -5,6 +5,7 @@
  *      Author: @v-barros
  */
 #include "eventloop.h"
+#include "server.h"
 #define BUFFLEN 1024
 void read_data(int fd,void*arg,long time_now,void *event_loop){
     registered_event *aux_ev = (registered_event*) arg;
@@ -25,6 +26,9 @@ void read_data(int fd,void*arg,long time_now,void *event_loop){
         printf("%s read(), error: %s\n",__func__,strerror(errno));
         return;
     }
+     
+    int i = formatCommand(buf);
+    
     event_create(evloop,fd,write_data,WRITEABLE,time(NULL));
 }
 

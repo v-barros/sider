@@ -18,8 +18,6 @@ struct server_str server;
 /* Global shared responses to build server responses*/
 struct shared_resp shared;
 
-int formatCommand(char * s);
-
 int reply(const char * buff, int len);
 
 void createSharedResps(){
@@ -42,7 +40,8 @@ void createSharedResps(){
         shared.bulkhdr[j] = _newNull();
         _sprintf(shared.mbulkhdr[j],"*%d\r\n",j);
         _sprintf(shared.bulkhdr[j],"$%d\r\n",j);
-        printf("%s\t\n",get(shared.bulkhdr[j]));
+    //    printf("%s\t%d\n",get(shared.bulkhdr[j]),len(shared.bulkhdr[j]));
+       // printf("real length [%ld]\n", strlen(get(shared.bulkhdr[j])));
     }
 
 }
@@ -62,8 +61,8 @@ int reply(const char * buff, int len){
 
 int formatCommand(char * s){
     int i=0;
-    for(;i<commands;i++){
-        if(strncmp(s+1,userCommandTable[i].name,1) ==0)
+    for(;i<COMMANDS;i++){
+        if(strncmp(s+1,userCommandTable[i].name,3) ==0)
         {
             return i;
         }

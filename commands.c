@@ -4,10 +4,10 @@
  *  Created on: 2021-11-21
  *      Author: @v-barros
  */
-#include "commands.h"
 #include "server.h"
 #include "parser.h"
 #include "utils.h"
+#include "commands.h"
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
@@ -58,9 +58,8 @@ void setFun(Table * table,char * args, struct server_resp * reply){
     memset(key,0,maxkeylength);
     memset(value,0,maxkeylength);
     trimSetArgs(args,key,value);
-  //  printf("SET key= \"%s\" value= \"%s\"",key,value);
+    printf("SET key= \"%s\" value= \"%s\"",key,value);
     if(put(table,key,value))
-       // putText(reply,value);
         addReplyBool(reply,1);
     else
         addReplyBool(reply,0);
