@@ -60,7 +60,7 @@ void serverConfInit(){
     server.port=PORT;
     server.reply=create_resp();
     eventloop* ev_loop= init_loop(server.port);
-    server.ev = ev_loop;
+    server.el = ev_loop;
     printf("epoll file descriptor [%d]\n ",ev_loop->epollfd);
     printf("server running!\n using port [%d]\n", server.port);
 }
@@ -91,6 +91,6 @@ server_resp * create_resp(){
 int main(void){
     createSharedResps();
     serverConfInit();
-    runloop(server.ev);
+    runloop(server.el);
     return 0;
 }
