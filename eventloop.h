@@ -1,3 +1,9 @@
+/*
+ * eventloop.h
+ *
+ *  Created on: 2023-05-22
+ *      Author: @v-barros
+ */
 #ifndef EVENTLOOP_H_
 #define EVENTLOOP_H_
 #include <stdio.h>
@@ -12,8 +18,8 @@
 #include <arpa/inet.h>
 #include <fcntl.h>
 #include <time.h>
-#include "server.h"
 #include "connection.h"
+#include "server.h"
 #define EVENTS_MAX 1024
 #define NONE 0
 #define READABLE 1
@@ -27,10 +33,6 @@ typedef struct _eventloop eventloop;
 struct registered_event{
 	int fd;                                             //fd used for both socket handling and indexing in registered_events array
     int mask;											//event mask might be WRITEABLE, READABLE or NONE for unmonitored events
-    int argc;                                           //argument count (from command input)
-    long last_active;									//Record the timestamp of each event
-    char **argv;                                        //argument vector (command keys and flags) 
-    siderCommand * cmd;                                 //command to be processed
     event_handler *read_event_handler;					//Callback function (accept_con,read_data)
     event_handler *write_event_handler;					//Callback function (write_data)
 }; 
