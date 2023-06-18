@@ -21,7 +21,6 @@ typedef enum {
 
 typedef struct ConnectionType {
     void (*events_handler)(struct _eventloop *el, int fd, void *clientData, int mask);
-    int (*connect)(struct connection *conn, const char *addr, int port, const char *source_addr, ConnectionCallbackFunc connect_handler);
     int (*write)(struct connection *conn, const void *data, size_t data_len);
     int (*read)(struct connection *conn, void *buf, size_t buf_len);
     void (*close)(struct connection *conn);
@@ -56,10 +55,24 @@ int init_conn(int port);
 int connGetSocketError(connection *conn);
 static void connSocketEventHandler(struct _eventloop *el, int fd, void *clientData, int mask);
 int connGetSocketError(connection *conn);
+
 connection *connCreateSocket();
+connection *connCreateAcceptedSocket(int fd);
+
+int connGetState(connection *conn);
 static void connSocketClose(connection *conn);
 static int connSocketRead(connection *conn, void *buf, size_t buf_len);
 static int connSocketWrite(connection *conn, const void *data, size_t data_len);
+static int connSocketConnect(connection *conn, const char *addr, int port, const char *src_addr,ConnectionCallbackFunc connect_handler);
 
+static inline int connAccept(connection *conn, ConnectionCallbackFunc accept_handler) {
+    return conn->type->accept(conn, accept_handler);
+}
+
+static inline void connClose(connection *conn) {
+    conn->type->close(conn);
+}
+/* Get the associated private data pointer */
+void *connGetPrivateData(connection *conn);
 
 #endif // CONNECTION_H_

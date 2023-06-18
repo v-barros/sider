@@ -38,8 +38,7 @@ ConnectionType CT_Socket = {
     .write = connSocketWrite,
     .read = connSocketRead,
     .accept = connSocketAccept
-  /*.connect = connSocketConnect,
-    .set_write_handler = connSocketSetWriteHandler,
+  /*.set_write_handler = connSocketSetWriteHandler,
     .set_read_handler = connSocketSetReadHandler,
     .get_last_error = connSocketGetLastError,
     .blocking_connect = connSocketBlockingConnect,
@@ -55,6 +54,13 @@ connection *connCreateSocket() {
     conn->type = &CT_Socket;
     conn->fd = -1;
 
+    return conn;
+}
+
+connection *connCreateAcceptedSocket(int fd) {
+    connection *conn = connCreateSocket();
+    conn->fd = fd;
+    conn->state = CONN_STATE_ACCEPTING;
     return conn;
 }
 
@@ -144,6 +150,15 @@ static int connSocketRead(connection *conn, void *buf, size_t buf_len) {
     }
 
     return ret;
+}
+
+int connGetState(connection *conn) {
+    return conn->state;
+}
+
+/* Get the associated private data pointer */
+void *connGetPrivateData(connection *conn) {
+    return conn->private_data;
 }
 
 int init_conn(int port){
