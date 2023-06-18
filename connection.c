@@ -4,13 +4,14 @@
  *  Created on: 2023-05-23
  *      Author: @v-barros
  */
-#include "connection.h"
 #include <string.h>
 #include <stdlib.h>
 #include <sys/socket.h>
 #include <assert.h>
 #include <arpa/inet.h>
 #include <fcntl.h>
+#include <stddef.h>
+#include "connection.h"
 
 int init_conn(int port){
 

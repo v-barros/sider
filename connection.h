@@ -6,8 +6,7 @@
  */
 #ifndef CONNECTION_H_
 #define CONNECTION_H_
-struct aeEventLoop;
-
+struct _eventloop;
 
 typedef struct connection connection;
 typedef void (*ConnectionCallbackFunc)(struct connection *conn);
@@ -21,7 +20,7 @@ typedef enum {
 } ConnectionState;
 
 typedef struct ConnectionType {
-    void (*ae_handler)(struct _eventloop *el, int fd, void *clientData, int mask);
+    void (*events_handler)(struct _eventloop *el, int fd, void *clientData, int mask);
     int (*connect)(struct connection *conn, const char *addr, int port, const char *source_addr, ConnectionCallbackFunc connect_handler);
     int (*write)(struct connection *conn, const void *data, size_t data_len);
     int (*read)(struct connection *conn, void *buf, size_t buf_len);
