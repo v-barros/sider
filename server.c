@@ -4,11 +4,12 @@
  *  Created on: 2021-11-21
  *      Author: @v-barros
  */
-#include "server.h"
+#include <stddef.h>
+#include "connection.h"
 #include "ht.h"
 #include "utils.h"
-#include "connection.h"
 #include <assert.h>
+#include "server.h"
 #define replies 2
 //#define PORT 8000
 

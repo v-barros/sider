@@ -7,6 +7,7 @@
 #ifndef SERVER_H_
 #define SERVER_H_
 
+
 #include <stdio.h>
 #include <netdb.h>
 #include <netinet/in.h>
@@ -17,7 +18,7 @@
 #include <unistd.h>
 #include "eventloop.h"
 #include "string.h"
-
+#include "connection.h"
 #define PORT 1234
 
 #define OUTPUT_BUF_LEN 1024
@@ -88,8 +89,6 @@ void getCommand(client*);
 
 void setCommand(client*);
 
-
-
 /*Global server*/
 extern struct server_str server;
 
@@ -122,5 +121,8 @@ void createSharedResps();
 server_resp * create_resp();
 
 int formatCommand(char * s);
+
+void acceptTcpHandler(eventloop *el, int fd, void *privdata, int mask);
+void readQueryFromClient(connection *conn);
 
 #endif // SERVER_H_

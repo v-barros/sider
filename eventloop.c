@@ -5,6 +5,9 @@
  *      Author: @v-barros
  */
 #include "eventloop.h"
+#include "connection.h"
+#include "server.h"
+
 #define TIMEOUT 5
 
 static inline void check_timeout(long now,int *checkpos,eventloop* event_loop);
@@ -22,7 +25,9 @@ eventloop * init_loop(int port){
     for(i=0;i<EVENTS_MAX;i++){
         set_mask(&ev->events_t[i],NONE);
     }
-    event_create(ev,socket,accept_con,READABLE,time(NULL));
+    /* Create an event handler for accepting new connections in TCP sockets */
+    event_create(ev,socket,acceptTcpHandler,READABLE,time(NULL));
+    
     ev->socketfd=socket;
     ev->setsize=EVENTS_MAX;
     return ev;

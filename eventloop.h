@@ -18,8 +18,6 @@
 #include <arpa/inet.h>
 #include <fcntl.h>
 #include <time.h>
-#include "connection.h"
-#include "server.h"
 #define EVENTS_MAX 1024
 #define NONE 0
 #define READABLE 1
@@ -64,6 +62,6 @@ void event_add(int event_fd,eventloop* eventLoop, int mask);
 /*event handlers (callback functions)*/
 
 void read_data(int fd,void*arg,long time_now,void* event_loop);
-void accept_con(int fd,void*arg,long time_now,void *event_loop);
+//void accept_con(int fd,void*arg,long time_now,void *event_loop);
 void write_data(int fd,void*arg,long time_now,void *event_loop);
 #endif

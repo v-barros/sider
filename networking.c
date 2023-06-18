@@ -10,9 +10,49 @@ void clientAcceptHandler(connection *conn);
 void freeClient(client *c);
 client *createClient(connection *conn);
 
+void readQueryFromClient(connection *conn) {
+    client *c = connGetPrivateData(conn);
+}
+
+void accept_con(int fd,void*arg,long time_now,void *event_loop)
+{
+    struct sockaddr_in cin;
+    socklen_t addr_len = sizeof(cin);
+    int cfd, i;
+    eventloop * evloop=(eventloop*)event_loop;
+
+    if ((cfd = accept(fd, (struct sockaddr *)&cin,&addr_len)) == -1) {
+        printf("%s: accept, %s\n", __func__, strerror(errno));
+        return ;
+    }
+    registered_event aux;
+    if (i == EVENTS_MAX) {
+        printf("%s: connection overflow [%d]\n", __func__, EVENTS_MAX);
+        return;
+    }
+    int flag = 0;
+    
+    // set socket to NON BLOCKING
+    if ((flag = fcntl(cfd, F_SETFL, O_NONBLOCK)) < 0) {
+        printf("%s: fcntl(), %s\n", __func__, strerror(errno));
+        return;
+    }
+    event_create(evloop,cfd,read_data,READABLE,time(NULL)); 
+    printf("new connection at fd %d\n",cfd);
+}
+
+void acceptTcpHandler(eventloop *el, int fd, void *privdata, int mask) {
+    int cport, cfd;
+
+    accept_con(fd,NULL,0L,el);
+    
+    acceptCommonHandler(connCreateAcceptedSocket(cfd),0);
+
+}
+
 client *createClient(connection *conn) {
     client *c = malloc(sizeof(client));
-
+    connSetReadHandler(conn, readQueryFromClient);
     return c;
 }
 

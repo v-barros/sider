@@ -4,9 +4,10 @@
  *  Created on: 2021-11-21
  *      Author: @v-barros
  */
+#include "server.h"
 #include "parser.h"
 #include "utils.h"
-#include "server.h"
+#include "connection.h"
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
