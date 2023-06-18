@@ -34,10 +34,10 @@ static int connSocketAccept(connection *conn, ConnectionCallbackFunc accept_hand
 
 ConnectionType CT_Socket = {
     .events_handler = connSocketEventHandler,
-  /*.close = connSocketClose,
+    .close = connSocketClose,
     .write = connSocketWrite,
     .read = connSocketRead,
-  */.accept = connSocketAccept
+    .accept = connSocketAccept
   /*.connect = connSocketConnect,
     .set_write_handler = connSocketSetWriteHandler,
     .set_read_handler = connSocketSetReadHandler,
@@ -112,6 +112,38 @@ static void connSocketClose(connection *conn) {
     }
 
     free(conn);
+}
+
+static int connSocketWrite(connection *conn, const void *data, size_t data_len) {
+    int ret = write(conn->fd, data, data_len);
+    if (ret < 0 && errno != EAGAIN) {
+        conn->last_errno = errno;
+
+        /* Don't overwrite the state of a connection that is not already
+         * connected, not to mess with handler callbacks.
+         */
+        if (errno != EINTR && conn->state == CONN_STATE_CONNECTED)
+            conn->state = CONN_STATE_ERROR;
+    }
+
+    return ret;
+}
+
+static int connSocketRead(connection *conn, void *buf, size_t buf_len) {
+    int ret = read(conn->fd, buf, buf_len);
+    if (!ret) {
+        conn->state = CONN_STATE_CLOSED;
+    } else if (ret < 0 && errno != EAGAIN) {
+        conn->last_errno = errno;
+
+        /* Don't overwrite the state of a connection that is not already
+         * connected, not to mess with handler callbacks.
+         */
+        if (errno != EINTR && conn->state == CONN_STATE_CONNECTED)
+            conn->state = CONN_STATE_ERROR;
+    }
+
+    return ret;
 }
 
 int init_conn(int port){

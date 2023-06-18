@@ -58,5 +58,8 @@ static void connSocketEventHandler(struct _eventloop *el, int fd, void *clientDa
 int connGetSocketError(connection *conn);
 connection *connCreateSocket();
 static void connSocketClose(connection *conn);
+static int connSocketRead(connection *conn, void *buf, size_t buf_len);
+static int connSocketWrite(connection *conn, const void *data, size_t data_len);
+
 
 #endif // CONNECTION_H_
