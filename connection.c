@@ -31,7 +31,6 @@ static int connSocketAccept(connection *conn, ConnectionCallbackFunc accept_hand
     return ret;
 }
 
-
 ConnectionType CT_Socket = {
     .events_handler = connSocketEventHandler,
     .close = connSocketClose,
