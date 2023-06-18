@@ -57,5 +57,6 @@ int connGetSocketError(connection *conn);
 static void connSocketEventHandler(struct _eventloop *el, int fd, void *clientData, int mask);
 int connGetSocketError(connection *conn);
 connection *connCreateSocket();
+static void connSocketClose(connection *conn);
 
 #endif // CONNECTION_H_

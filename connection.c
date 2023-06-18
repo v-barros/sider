@@ -33,8 +33,8 @@ static int connSocketAccept(connection *conn, ConnectionCallbackFunc accept_hand
 
 
 ConnectionType CT_Socket = {
-  /*.events_handler = connSocketEventHandler,
-    .close = connSocketClose,
+    .events_handler = connSocketEventHandler,
+  /*.close = connSocketClose,
     .write = connSocketWrite,
     .read = connSocketRead,
   */.accept = connSocketAccept
@@ -82,7 +82,8 @@ static void connSocketEventHandler(struct _eventloop *el, int fd, void *clientDa
             conn->state = CONN_STATE_CONNECTED;
         }
 
-        if (!conn->write_handler) event_rm(server.ev,conn->fd);
+        if (!conn->write_handler){}
+         //event_rm(server.ev,conn->fd);
 
         if (!callHandler(conn, conn->conn_handler)) return;
         conn->conn_handler = NULL;
@@ -91,7 +92,7 @@ static void connSocketEventHandler(struct _eventloop *el, int fd, void *clientDa
     int call_write = (mask & WRITABLE) && conn->write_handler;
     int call_read = (mask & READABLE) && conn->read_handler;
 
-    /* Handle normal I/O flows */
+    /* Fire the readable event. */
     if (call_read) {
         if (callHandler(conn, conn->read_handler)) return;
     }
@@ -100,6 +101,17 @@ static void connSocketEventHandler(struct _eventloop *el, int fd, void *clientDa
         if (callHandler(conn, conn->write_handler)) return;
     }
 
+}
+
+/* Close the connection and free resources. */
+static void connSocketClose(connection *conn) {
+    if (conn->fd != -1) {
+       // event_rm(server.el,conn->fd);
+        close(conn->fd);
+        conn->fd = -1;
+    }
+
+    free(conn);
 }
 
 int init_conn(int port){
