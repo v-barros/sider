@@ -13,7 +13,6 @@
 
 typedef struct siderCommand siderCommand;
 typedef void command_proc(Table *,char * ,server_resp*);
-
 typedef int command_get_keys(siderCommand *cmd, char **argv, int argc, getKeysResult *result);
 
 struct siderCommand{
@@ -24,16 +23,6 @@ struct siderCommand{
 void getCommand(Table * table,char * args,server_resp*);
 
 void setCommand(Table * table,char * args,server_resp*);
-
-int is_valid_get(char*c,int len);
-
-int is_valid_set(char*c,int len);
-
-/*
-
-    response
-    $<response_len>{response}\r\n
-*/
 
 static const struct siderCommand userCommandTable[COMMANDS]={
     {
