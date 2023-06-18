@@ -53,4 +53,9 @@ struct connection
 // set up new NON BLOCKING listening socket using port and return socketfd
 int init_conn(int port);
 
+int connGetSocketError(connection *conn);
+static void connSocketEventHandler(struct _eventloop *el, int fd, void *clientData, int mask);
+int connGetSocketError(connection *conn);
+connection *connCreateSocket();
+
 #endif // CONNECTION_H_

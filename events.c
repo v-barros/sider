@@ -7,6 +7,7 @@
 #include "eventloop.h"
 #include "server.h"
 #define BUFFLEN 1024
+
 void read_data(int fd,void*arg,long time_now,void *event_loop){
     registered_event *aux_ev = (registered_event*) arg;
     char buf[BUFFLEN];
@@ -29,7 +30,7 @@ void read_data(int fd,void*arg,long time_now,void *event_loop){
      
     int i = formatCommand(buf);
     
-    event_create(evloop,fd,write_data,WRITEABLE,time(NULL));
+    event_create(evloop,fd,write_data,WRITABLE,time(NULL));
 }
 
 void accept_con(int fd,void*arg,long time_now,void *event_loop)
@@ -74,7 +75,7 @@ void write_data(int fd,void*arg,long time_now,void *event_loop){
         event_rm(aux_ev,evloop->epollfd);
         printf("failed to send all data\n");
         close(fd); /* failed to send all data at once, close */
-        aux_ev->last_active=time_now;
+        //aux_ev->last_active=time_now;
         return;
     }
     event_create(evloop,fd,read_data,READABLE,time(NULL));

@@ -50,6 +50,57 @@ ConnectionType CT_Socket = {
 */
 };
 
+connection *connCreateSocket() {
+    connection *conn = malloc(sizeof(connection));
+    conn->type = &CT_Socket;
+    conn->fd = -1;
+
+    return conn;
+}
+
+int connGetSocketError(connection *conn) {
+    int sockerr = 0;
+    socklen_t errlen = sizeof(sockerr);
+
+    if (getsockopt(conn->fd, SOL_SOCKET, SO_ERROR, &sockerr, &errlen) == -1)
+        sockerr = errno;
+    return sockerr;
+}
+
+static void connSocketEventHandler(struct _eventloop *el, int fd, void *clientData, int mask)
+{
+    connection *conn = clientData;
+
+    if (conn->state == CONN_STATE_CONNECTING &&
+            (mask & WRITABLE) && conn->conn_handler) {
+
+        int conn_error = connGetSocketError(conn);
+        if (conn_error) {
+            conn->last_errno = conn_error;
+            conn->state = CONN_STATE_ERROR;
+        } else {
+            conn->state = CONN_STATE_CONNECTED;
+        }
+
+        if (!conn->write_handler) event_rm(server.ev,conn->fd);
+
+        if (!callHandler(conn, conn->conn_handler)) return;
+        conn->conn_handler = NULL;
+    }
+
+    int call_write = (mask & WRITABLE) && conn->write_handler;
+    int call_read = (mask & READABLE) && conn->read_handler;
+
+    /* Handle normal I/O flows */
+    if (call_read) {
+        if (callHandler(conn, conn->read_handler)) return;
+    }
+    /* Fire the writable event. */
+    if (call_write) {
+        if (callHandler(conn, conn->write_handler)) return;
+    }
+
+}
 
 int init_conn(int port){
 

@@ -23,7 +23,7 @@
 #define EVENTS_MAX 1024
 #define NONE 0
 #define READABLE 1
-#define WRITEABLE 2
+#define WRITABLE 2
 
 typedef void event_handler (int,void*,long,void*);
 typedef struct fired_event fired_event;

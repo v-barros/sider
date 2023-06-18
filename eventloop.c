@@ -6,6 +6,7 @@
  */
 #include "eventloop.h"
 #define TIMEOUT 5
+
 static inline void check_timeout(long now,int *checkpos,eventloop* event_loop);
 void set_mask(registered_event* ev,int mask);
 
@@ -34,13 +35,12 @@ void set_mask(registered_event* ev,int mask){
 void event_create(eventloop *event_loop,int event_fd, event_handler callback,int mask,long time_now){
     registered_event *ev = &event_loop->events_t[event_fd];
     ev->fd=event_fd;
-    ev->last_active=time_now;
     
     event_add(ev->fd,event_loop,mask);
     ev->mask=mask;
     if(mask & READABLE) 
         ev->read_event_handler=callback;
-    if(mask & WRITEABLE) 
+    if(mask & WRITABLE) 
         ev->write_event_handler=callback;
 
     if (event_fd > event_loop->maxfd)
@@ -54,7 +54,7 @@ void event_rm(registered_event * ev, int epfd){
         return ;
     
     e_event.data.fd=ev->fd;
-    if(ev->mask & WRITEABLE)
+    if(ev->mask & WRITABLE)
         e_event.events = EPOLLOUT;    //EPOLLIN or EPOLLOUT
     if(ev->mask & READABLE)
         e_event.events = EPOLLIN;    //EPOLLIN or EPOLLOUT
@@ -71,7 +71,7 @@ void event_rm(registered_event * ev, int epfd){
 void event_add(int event_fd,eventloop* eventLoop, int mask){
     struct epoll_event e_event = {0, {0}};
     int op = eventLoop->events_t[event_fd].mask == NONE ? EPOLL_CTL_ADD : EPOLL_CTL_MOD;
-    if(mask & WRITEABLE)
+    if(mask & WRITABLE)
         e_event.events = EPOLLOUT;    //EPOLLIN or EPOLLOUT
     if(mask & READABLE)
         e_event.events = EPOLLIN;    //EPOLLIN or EPOLLOUT
@@ -134,7 +134,7 @@ static inline void check_timeout(long now,int *checkpos,eventloop* event_loop){
             if (event_loop->events_t[ck].mask == NONE || ck==socket_pos){
                 continue;
             }
-            long duration = now - event_loop->events_t[ck].last_active;       
+            long duration = now - 1;       
             if (duration >= timeout) {
                 close(event_loop->events_t[ck].fd);                           
                 printf("[fd=%d] timeout\n", event_loop->events_t[ck].fd);
