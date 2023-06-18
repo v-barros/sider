@@ -110,6 +110,7 @@ struct server_resp {
 
 struct server_str {
     int port;
+    int stat_numconnections;
     struct _eventloop* el;
     server_resp *reply;
 };

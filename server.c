@@ -7,7 +7,8 @@
 #include "server.h"
 #include "ht.h"
 #include "utils.h"
-#include "assert.h"
+#include "connection.h"
+#include <assert.h>
 #define replies 2
 //#define PORT 8000
 
@@ -60,7 +61,9 @@ void serverConfInit(){
     server.port=PORT;
     server.reply=create_resp();
     eventloop* ev_loop= init_loop(server.port);
+
     server.el = ev_loop;
+
     printf("epoll file descriptor [%d]\n ",ev_loop->epollfd);
     printf("server running!\n using port [%d]\n", server.port);
 }
