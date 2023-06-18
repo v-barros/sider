@@ -6,7 +6,6 @@
  */
 #include "server.h"
 #include "ht.h"
-#include "commands.h"
 #include "utils.h"
 #include "assert.h"
 #define replies 2
@@ -17,6 +16,17 @@ struct server_str server;
 
 /* Global shared responses to build server responses*/
 struct shared_resp shared;
+
+static const struct siderCommand userCommandTable[COMMANDS]={
+    {
+        "get",
+        getCommand
+    },
+    {
+        "set",
+        setCommand
+    }
+};
 
 int reply(const char * buff, int len);
 
