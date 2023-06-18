@@ -19,11 +19,16 @@
 #include "string.h"
 
 #define PORT 1234
+
 #define OUTPUT_BUF_LEN 1024
 #define OBJ_SHARED_BULKHDR_LEN 32
 #define MAX_KEYS_BUFFER 256
 #define REPLY_CHUNK_BYTES 1024
+
 #define COMMANDS 2
+
+#define C_OK 0
+#define C_ERR -1
 
 typedef struct server_resp server_resp;
 typedef struct server_str server_str;

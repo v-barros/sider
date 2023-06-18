@@ -11,7 +11,45 @@
 #include <arpa/inet.h>
 #include <fcntl.h>
 #include <stddef.h>
+#include "server.h"
 #include "connection.h"
+
+static inline int callHandler(connection *conn, ConnectionCallbackFunc handler) {
+    if (handler) 
+        handler(conn);
+    return C_OK;
+}
+
+static int connSocketAccept(connection *conn, ConnectionCallbackFunc accept_handler) {
+    int ret = C_OK;
+
+    if (conn->state != CONN_STATE_ACCEPTING) return C_ERR;
+    conn->state = CONN_STATE_CONNECTED;
+
+    if (!callHandler(conn, accept_handler)) ret = C_ERR;
+
+    return ret;
+}
+
+
+ConnectionType CT_Socket = {
+  /*.events_handler = connSocketEventHandler,
+    .close = connSocketClose,
+    .write = connSocketWrite,
+    .read = connSocketRead,
+  */.accept = connSocketAccept
+  /*.connect = connSocketConnect,
+    .set_write_handler = connSocketSetWriteHandler,
+    .set_read_handler = connSocketSetReadHandler,
+    .get_last_error = connSocketGetLastError,
+    .blocking_connect = connSocketBlockingConnect,
+    .sync_write = connSocketSyncWrite,
+    .sync_read = connSocketSyncRead,
+    .sync_readline = connSocketSyncReadLine,
+    .get_type = connSocketGetType
+*/
+};
+
 
 int init_conn(int port){
 
