@@ -14,19 +14,23 @@
 #include "server.h"
 #include "connection.h"
 
-static inline int callHandler(connection *conn, ConnectionCallbackFunc handler) {
-    if (handler) 
+static inline int callHandler(connection *conn, ConnectionCallbackFunc handler)
+{
+    if (handler)
         handler(conn);
     return C_OK;
 }
 
-static int connSocketAccept(connection *conn, ConnectionCallbackFunc accept_handler) {
+static int connSocketAccept(connection *conn, ConnectionCallbackFunc accept_handler)
+{
     int ret = C_OK;
 
-    if (conn->state != CONN_STATE_ACCEPTING) return C_ERR;
+    if (conn->state != CONN_STATE_ACCEPTING)
+        return C_ERR;
     conn->state = CONN_STATE_CONNECTED;
 
-    if (!callHandler(conn, accept_handler)) ret = C_ERR;
+    if (!callHandler(conn, accept_handler))
+        ret = C_ERR;
 
     return ret;
 }
@@ -36,19 +40,20 @@ ConnectionType CT_Socket = {
     .close = connSocketClose,
     .write = connSocketWrite,
     .read = connSocketRead,
-    .accept = connSocketAccept
-  /*.set_write_handler = connSocketSetWriteHandler,
-    .set_read_handler = connSocketSetReadHandler,
-    .get_last_error = connSocketGetLastError,
-    .blocking_connect = connSocketBlockingConnect,
-    .sync_write = connSocketSyncWrite,
-    .sync_read = connSocketSyncRead,
-    .sync_readline = connSocketSyncReadLine,
-    .get_type = connSocketGetType
-*/
+    .accept = connSocketAccept,
+    .set_write_handler = connSocketSetWriteHandler,
+    .set_read_handler = connSocketSetReadHandler
+    /*.get_last_error = connSocketGetLastError,
+      .blocking_connect = connSocketBlockingConnect,
+      .sync_write = connSocketSyncWrite,
+      .sync_read = connSocketSyncRead,
+      .sync_readline = connSocketSyncReadLine,
+      .get_type = connSocketGetType
+  */
 };
 
-connection *connCreateSocket() {
+connection *connCreateSocket()
+{
     connection *conn = malloc(sizeof(connection));
     conn->type = &CT_Socket;
     conn->fd = -1;
@@ -56,14 +61,16 @@ connection *connCreateSocket() {
     return conn;
 }
 
-connection *connCreateAcceptedSocket(int fd) {
+connection *connCreateAcceptedSocket(int fd)
+{
     connection *conn = connCreateSocket();
     conn->fd = fd;
     conn->state = CONN_STATE_ACCEPTING;
     return conn;
 }
 
-int connGetSocketError(connection *conn) {
+int connGetSocketError(connection *conn)
+{
     int sockerr = 0;
     socklen_t errlen = sizeof(sockerr);
 
@@ -72,25 +79,42 @@ int connGetSocketError(connection *conn) {
     return sockerr;
 }
 
+/*  This function is meant to handle the events at registered_event structs.
+    We assign it to registered_event->read_event_handler and registered_event->write_event_handler
+    and when an event is triggered, eventloop will call this function to handle the event
+
+    Then, we process the event(read or write) using the connection-specific functions
+
+    In this case, I'm using only TCP connections, but the real Redis uses this layer of abstraction
+    to handle different types of sockets (Unix, TCP and TLS so far)
+
+*/
 static void connSocketEventHandler(struct _eventloop *el, int fd, void *clientData, int mask)
 {
     connection *conn = clientData;
 
     if (conn->state == CONN_STATE_CONNECTING &&
-            (mask & WRITABLE) && conn->conn_handler) {
+        (mask & WRITABLE) && conn->conn_handler)
+    {
 
         int conn_error = connGetSocketError(conn);
-        if (conn_error) {
+        if (conn_error)
+        {
             conn->last_errno = conn_error;
             conn->state = CONN_STATE_ERROR;
-        } else {
+        }
+        else
+        {
             conn->state = CONN_STATE_CONNECTED;
         }
 
-        if (!conn->write_handler){}
-         //event_rm(server.ev,conn->fd);
+        if (!conn->write_handler)
+        {
+        }
+        // event_rm(server.ev,conn->fd);
 
-        if (!callHandler(conn, conn->conn_handler)) return;
+        if (!callHandler(conn, conn->conn_handler))
+            return;
         conn->conn_handler = NULL;
     }
 
@@ -98,20 +122,25 @@ static void connSocketEventHandler(struct _eventloop *el, int fd, void *clientDa
     int call_read = (mask & READABLE) && conn->read_handler;
 
     /* Fire the readable event. */
-    if (call_read) {
-        if (callHandler(conn, conn->read_handler)) return;
+    if (call_read)
+    {
+        if (callHandler(conn, conn->read_handler))
+            return;
     }
     /* Fire the writable event. */
-    if (call_write) {
-        if (callHandler(conn, conn->write_handler)) return;
+    if (call_write)
+    {
+        if (callHandler(conn, conn->write_handler))
+            return;
     }
-
 }
 
 /* Close the connection and free resources. */
-static void connSocketClose(connection *conn) {
-    if (conn->fd != -1) {
-       // event_rm(server.el,conn->fd);
+static void connSocketClose(connection *conn)
+{
+    if (conn->fd != -1)
+    {
+        // event_rm(server.el,conn->fd);
         close(conn->fd);
         conn->fd = -1;
     }
@@ -119,9 +148,11 @@ static void connSocketClose(connection *conn) {
     free(conn);
 }
 
-static int connSocketWrite(connection *conn, const void *data, size_t data_len) {
+static int connSocketWrite(connection *conn, const void *data, size_t data_len)
+{
     int ret = write(conn->fd, data, data_len);
-    if (ret < 0 && errno != EAGAIN) {
+    if (ret < 0 && errno != EAGAIN)
+    {
         conn->last_errno = errno;
 
         /* Don't overwrite the state of a connection that is not already
@@ -134,11 +165,15 @@ static int connSocketWrite(connection *conn, const void *data, size_t data_len) 
     return ret;
 }
 
-static int connSocketRead(connection *conn, void *buf, size_t buf_len) {
+static int connSocketRead(connection *conn, void *buf, size_t buf_len)
+{
     int ret = read(conn->fd, buf, buf_len);
-    if (!ret) {
+    if (!ret)
+    {
         conn->state = CONN_STATE_CLOSED;
-    } else if (ret < 0 && errno != EAGAIN) {
+    }
+    else if (ret < 0 && errno != EAGAIN)
+    {
         conn->last_errno = errno;
 
         /* Don't overwrite the state of a connection that is not already
@@ -151,16 +186,55 @@ static int connSocketRead(connection *conn, void *buf, size_t buf_len) {
     return ret;
 }
 
-int connGetState(connection *conn) {
+int connGetState(connection *conn)
+{
     return conn->state;
 }
 
 /* Get the associated private data pointer */
-void *connGetPrivateData(connection *conn) {
+void *connGetPrivateData(connection *conn)
+{
     return conn->private_data;
 }
 
-int init_conn(int port){
+/* Register a write handler, to be called when the connection is writable.
+ * If NULL, the existing handler is removed.
+ *
+ */
+static int connSocketSetWriteHandler(connection *conn, ConnectionCallbackFunc func)
+{
+
+    if (!conn->write_handler)
+    {
+    }
+    //    event_rm(server.el,conn->fd);
+    else if (event_create(server.el, conn->fd, conn->type->events_handler,
+                          WRITABLE, conn) == C_ERR)
+        return C_ERR;
+    return C_OK;
+}
+
+/* Register a read handler, to be called when the connection is readable.
+ * If NULL, the existing handler is removed.
+ */
+static int connSocketSetReadHandler(connection *conn, ConnectionCallbackFunc func)
+{
+    if (func == conn->read_handler)
+        return C_OK;
+
+    conn->read_handler = func;
+    if (!conn->read_handler)
+    {
+    }
+    // event_rm(server.el,conn->fd);
+    else if (event_create(server.el, conn->fd, conn->type->events_handler,
+                          READABLE, conn) == C_ERR)
+        return C_ERR;
+    return C_OK;
+}
+
+int init_conn(int port)
+{
 
     struct sockaddr_in servaddr;
     memset(&servaddr, 0, sizeof(servaddr));
@@ -172,14 +246,13 @@ int init_conn(int port){
 
     int sockfd = socket(AF_INET, SOCK_STREAM, 0);
 
-    assert(sockfd !=-1);
+    assert(sockfd != -1);
     // set socket to NON BLOCKING
     fcntl(sockfd, F_SETFL, O_NONBLOCK);
-    
-    assert((bind(sockfd, (struct sockaddr*)&servaddr, sizeof(servaddr))) == 0);
-   
+
+    assert((bind(sockfd, (struct sockaddr *)&servaddr, sizeof(servaddr))) == 0);
+
     assert((listen(sockfd, 20)) == 0);
 
     return sockfd;
-        
 }

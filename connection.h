@@ -24,7 +24,7 @@ typedef struct ConnectionType {
     int (*read)(struct connection *conn, void *buf, size_t buf_len);
     void (*close)(struct connection *conn);
     int (*accept)(struct connection *conn, ConnectionCallbackFunc accept_handler);
-    int (*set_write_handler)(struct connection *conn, ConnectionCallbackFunc handler, int barrier);
+    int (*set_write_handler)(struct connection *conn, ConnectionCallbackFunc handler);
     int (*set_read_handler)(struct connection *conn, ConnectionCallbackFunc handler);
     const char *(*get_last_error)(struct connection *conn);
     int (*blocking_connect)(struct connection *conn, const char *addr, int port, long long timeout);
@@ -56,11 +56,14 @@ connection *connCreateSocket();
 connection *connCreateAcceptedSocket(int fd);
 /* Get the associated private data pointer */
 void *connGetPrivateData(connection *conn);
+
 int connGetState(connection *conn);
 static void connSocketClose(connection *conn);
 static int connSocketRead(connection *conn, void *buf, size_t buf_len);
 static int connSocketWrite(connection *conn, const void *data, size_t data_len);
 static int connSocketConnect(connection *conn, const char *addr, int port, const char *src_addr,ConnectionCallbackFunc connect_handler);
+static int connSocketSetReadHandler(connection *conn, ConnectionCallbackFunc func);
+static int connSocketSetWriteHandler(connection *conn, ConnectionCallbackFunc func);
 
 static inline int connAccept(connection *conn, ConnectionCallbackFunc accept_handler) {
     return conn->type->accept(conn, accept_handler);
@@ -70,18 +73,18 @@ static inline void connClose(connection *conn) {
     conn->type->close(conn);
 }
 
-/* Register a read handler, to be called when the connection is readable.
+/* Register a read handler using conn->type->set_read_handler, to be called when the connection is readable.
  * If NULL, the existing handler is removed.
  */
 static inline int connSetReadHandler(connection *conn, ConnectionCallbackFunc func) {
     return conn->type->set_read_handler(conn, func);
 }
 
-/* Register a write handler, to be called when the connection is writable.
+/* Register a write handler using conn->type->set_write_handler, to be called when the connection is writable.
  * If NULL, the existing handler is removed.
  */
 static inline int connSetWriteHandler(connection *conn, ConnectionCallbackFunc func) {
-    return conn->type->set_write_handler(conn, func, 0);
+    return conn->type->set_write_handler(conn, func);
 }
 
 
