@@ -25,7 +25,6 @@
 #define READABLE 1 /* fire when we got a readable event in the fd*/
 #define WRITABLE 2 /* fire when we got a writable event in the fd*/
 
-typedef struct fired_event fired_event;
 typedef struct registered_event registered_event;
 typedef struct _eventloop eventloop;
 typedef void event_handler (eventloop *el,int fd,void* clientData,int mask);
@@ -37,13 +36,6 @@ struct registered_event{
     event_handler *write_event_handler;					//Callback function (write_data)
     void * clientData;
 }; 
-
-/* struct used to pass the minimum information
-   required to interact with the epoll instance.*/
-struct fired_event{
-    int fd;                                             //fd used for both socket handling and indexing in registered_events array
-    int mask;											//mask is set using READABLE,WRITABLE and NONE. We marge READABLE and WRITABLE (using OR '|') when we want to monitor the fd for both ops
-};
 
 struct _eventloop{
     int epollfd;                                        //Global epoll file descriptor (returned by epoll create)
