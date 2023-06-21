@@ -37,10 +37,14 @@ void set_mask(registered_event* ev,int mask){
     ev->mask=mask;
 }
 
-void event_create(eventloop *event_loop,int event_fd, event_handler callback,int mask,long time_now){
+int event_create(eventloop *event_loop,int event_fd, event_handler callback,int mask,void * clientData){
     registered_event *ev = &event_loop->events_t[event_fd];
     ev->fd=event_fd;
     
+     if (event_fd >= event_loop->setsize) {
+        return C_ERR;
+    }
+
     event_add(ev->fd,event_loop,mask);
     ev->mask=mask;
     if(mask & READABLE) 
@@ -50,6 +54,8 @@ void event_create(eventloop *event_loop,int event_fd, event_handler callback,int
 
     if (event_fd > event_loop->maxfd)
         event_loop->maxfd=event_fd;
+    
+    return C_OK;
 }
 
 void event_rm(registered_event * ev, int epfd){

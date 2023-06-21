@@ -37,7 +37,7 @@ void accept_con(int fd,void*arg,long time_now,void *event_loop)
         printf("%s: fcntl(), %s\n", __func__, strerror(errno));
         return;
     }
-    event_create(evloop,cfd,read_data,READABLE,time(NULL)); 
+   // event_create(evloop,cfd,read_data,READABLE,time(NULL)); 
     printf("new connection at fd %d\n",cfd);
 }
 

@@ -23,10 +23,10 @@
 #define READABLE 1
 #define WRITABLE 2
 
-typedef void event_handler (int,void*,long,void*);
 typedef struct fired_event fired_event;
 typedef struct registered_event registered_event;
 typedef struct _eventloop eventloop;
+typedef void event_handler (eventloop *el,int fd,void* clientData,int mask);
 
 struct registered_event{
 	int fd;                                             //fd used for both socket handling and indexing in registered_events array
@@ -55,7 +55,7 @@ struct _eventloop{
 
 eventloop * init_loop(int port);
 void runloop(eventloop* event_loop);
-void event_create(eventloop *event_loop,int event_fd, event_handler callback,int mask,long time_now);
+int event_create(eventloop *event_loop,int event_fd, event_handler callback,int mask,void * clientData);
 void event_rm(registered_event * ev, int epfd);
 void event_add(int event_fd,eventloop* eventLoop, int mask);
 

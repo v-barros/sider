@@ -30,7 +30,7 @@ void read_data(int fd,void*arg,long time_now,void *event_loop){
      
     int i = formatCommand(buf);
     
-    event_create(evloop,fd,write_data,WRITABLE,time(NULL));
+   // event_create(evloop,fd,write_data,WRITABLE,NULL);
 }
 
 void write_data(int fd,void*arg,long time_now,void *event_loop){
@@ -43,6 +43,6 @@ void write_data(int fd,void*arg,long time_now,void *event_loop){
         //aux_ev->last_active=time_now;
         return;
     }
-    event_create(evloop,fd,read_data,READABLE,time(NULL));
+   // event_create(evloop,fd,read_data,READABLE,time(NULL));
 
 }
