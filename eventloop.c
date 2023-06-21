@@ -26,7 +26,7 @@ eventloop * init_loop(int port){
         set_mask(&ev->events_t[i],NONE);
     }
     /* Create an event handler for accepting new connections in TCP sockets */
-    event_create(ev,socket,acceptTcpHandler,READABLE,time(NULL));
+    event_create(ev,socket,acceptTcpHandler,READABLE,NULL);
     
     ev->socketfd=socket;
     ev->setsize=EVENTS_MAX;
@@ -37,20 +37,24 @@ void set_mask(registered_event* ev,int mask){
     ev->mask=mask;
 }
 
+
 int event_create(eventloop *event_loop,int event_fd, event_handler callback,int mask,void * clientData){
-    registered_event *ev = &event_loop->events_t[event_fd];
-    ev->fd=event_fd;
+    registered_event *re = &event_loop->events_t[event_fd];
+    re->fd=event_fd;
     
      if (event_fd >= event_loop->setsize) {
         return C_ERR;
     }
 
-    event_add(ev->fd,event_loop,mask);
-    ev->mask=mask;
+    event_add(event_loop,re->fd,mask);
+
+    re->mask |=mask;
     if(mask & READABLE) 
-        ev->read_event_handler=callback;
+        re->read_event_handler=callback;
     if(mask & WRITABLE) 
-        ev->write_event_handler=callback;
+        re->write_event_handler=callback;
+  
+    re->clientData = clientData;
 
     if (event_fd > event_loop->maxfd)
         event_loop->maxfd=event_fd;
@@ -79,13 +83,19 @@ void event_rm(registered_event * ev, int epfd){
 
 }
 
-void event_add(int event_fd,eventloop* eventLoop, int mask){
+
+void event_add(eventloop* eventLoop, int event_fd,int mask){
     struct epoll_event e_event = {0, {0}};
     int op = eventLoop->events_t[event_fd].mask == NONE ? EPOLL_CTL_ADD : EPOLL_CTL_MOD;
+   
+    e_event.events = 0;
+
+    mask |= eventLoop->events_t[event_fd].mask; /*merge old events*/
+
     if(mask & WRITABLE)
-        e_event.events = EPOLLOUT;    //EPOLLIN or EPOLLOUT
+        e_event.events |= EPOLLOUT;    //EPOLLIN or EPOLLOUT
     if(mask & READABLE)
-        e_event.events = EPOLLIN;    //EPOLLIN or EPOLLOUT
+        e_event.events |= EPOLLIN;    //EPOLLIN or EPOLLOUT
 
     e_event.data.fd=event_fd;
     printf("event add OK [fd=%d], op=%d, events[%0X]\n", e_event.data.fd, op, e_event.events);
@@ -100,7 +110,7 @@ void runloop(eventloop* event_loop){
            
     int checkpos = 0, i;
     long now;
-    registered_event *ev;           
+    registered_event *rv;
     int triggeredfd;
     int mask;
 
@@ -115,22 +125,20 @@ void runloop(eventloop* event_loop){
             break;
         }
         
-
         for (i = 0; i < number_of_events; i++) {
             triggeredfd = event_loop->fired_events_t[i].data.fd;
-            ev =  &event_loop->events_t[triggeredfd];
-            mask= event_loop->fired_events_t[i].events;
+            rv =  &event_loop->events_t[triggeredfd];
+            mask = event_loop->fired_events_t[i].events;
 
-            if(mask==EPOLLIN)
-                ev->read_event_handler(ev->fd,ev,now,event_loop);
-            if(mask==EPOLLOUT)
-                ev->write_event_handler(ev->fd,ev,now,event_loop);
-          //  ev = (fired_event*)aux_events[i].data.ptr;  
-         //   if ((aux_events[i].events & EPOLLIN) && (ev->events & EPOLLIN))
-               // ev->callback(ev->fd, ev->arg,now,event_loop);
-          //  if ((aux_events[i].events & EPOLLOUT) && (ev->events & EPOLLOUT))
-              //  ev->callback(ev->fd, ev->arg,now,event_loop);
-        }
+            if (mask & EPOLLIN) mask |= READABLE;
+            if (mask & EPOLLOUT) mask |= WRITABLE;
+            
+            if(mask & READABLE && rv->mask & READABLE)
+                rv->read_event_handler(event_loop,rv->fd,rv->clientData,READABLE);
+            if(mask & WRITABLE && rv->mask & WRITABLE)
+                rv->write_event_handler(event_loop,rv->fd,rv->clientData,WRITABLE);
+
+            }
     }
 }
 
