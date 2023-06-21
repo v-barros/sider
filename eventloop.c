@@ -80,7 +80,6 @@ void event_rm(registered_event * ev, int epfd){
     if(epoll_ctl(epfd, EPOLL_CTL_DEL, ev->fd, &e_event)==0)
         close(ev->fd);
 
-
 }
 
 
@@ -108,11 +107,11 @@ void event_add(eventloop* eventLoop, int event_fd,int mask){
 
 void runloop(eventloop* event_loop){
            
-    int checkpos = 0, i;
+    int checkpos = 0, i,firedfd,firedmask,mask;
     long now;
     registered_event *rv;
-    int triggeredfd;
-    int mask;
+    struct epoll_event *fe;
+  
 
     while (1) {
         now=time(NULL);
@@ -126,18 +125,20 @@ void runloop(eventloop* event_loop){
         }
         
         for (i = 0; i < number_of_events; i++) {
-            triggeredfd = event_loop->fired_events_t[i].data.fd;
-            rv =  &event_loop->events_t[triggeredfd];
-            mask = event_loop->fired_events_t[i].events;
+            mask = 0;
+            fe = &event_loop->fired_events_t[i];
+            firedfd = fe->data.fd;
+            firedmask = fe->events;
 
-            if (mask & EPOLLIN) mask |= READABLE;
-            if (mask & EPOLLOUT) mask |= WRITABLE;
+            rv =  &event_loop->events_t[firedfd];
+
+            if (firedmask & EPOLLIN) mask |= READABLE;
+            if (firedmask & EPOLLOUT) mask |= WRITABLE;
             
             if(mask & READABLE && rv->mask & READABLE)
                 rv->read_event_handler(event_loop,rv->fd,rv->clientData,READABLE);
             if(mask & WRITABLE && rv->mask & WRITABLE)
                 rv->write_event_handler(event_loop,rv->fd,rv->clientData,WRITABLE);
-
             }
     }
 }
