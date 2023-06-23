@@ -10,6 +10,19 @@ void clientAcceptHandler(connection *conn);
 void freeClient(client *c);
 client *createClient(connection *conn);
 
+int processInputBuffer(client *c){
+
+    /* Don't process more buffers from clients that have already pending
+        * commands to execute in c->argv. */
+    if (c->flags & CLIENT_PENDING_COMMAND) return C_ERR;
+       
+    if (!c->querybuf == '*') return C_ERR;
+  //  if (processMultibulkBuffer(c) != C_OK) return C_ERR;
+  //  if (processCommand == C_ERR) return C_ERR;
+          
+    return C_OK;
+}
+
 void clientAcceptHandler(connection *conn) {
     client *c = connGetPrivateData(conn);
 
@@ -28,7 +41,7 @@ void readQueryFromClient(connection *conn) {
 
     printf("%d - %s\n",__LINE__,__func__);
     
-    //nread = connRead(c->conn, buf, readlen);
+    nread = connRead(c->conn, buf, readlen);
     if (nread == -1) {
         if (connGetState(conn) == CONN_STATE_CONNECTED) {
             return;
@@ -38,7 +51,10 @@ void readQueryFromClient(connection *conn) {
     } else if (nread == 0) {
         printf("connection closed by client, %s, error: %s\n",__func__,strerror(errno));
         freeClient(c);
+        return;
     }
+    processInputBuffer(c);
+    printf("query from client: %s",buf);
 
 }
 
