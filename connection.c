@@ -29,10 +29,7 @@ static int connSocketAccept(connection *conn, ConnectionCallbackFunc accept_hand
         return C_ERR;
     conn->state = CONN_STATE_CONNECTED;
 
-    if (!callHandler(conn, accept_handler))
-        ret = C_ERR;
-
-    return ret;
+    return callHandler(conn, accept_handler);
 }
 
 ConnectionType CT_Socket = {
