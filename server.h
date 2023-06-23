@@ -31,6 +31,7 @@
 #define C_OK 0
 #define C_ERR -1
 
+#define CLIENT_PENDING_COMMAND (1<<4)
 typedef struct server_resp server_resp;
 typedef struct server_str server_str;
 typedef struct shared_resp shared_resp;
@@ -57,6 +58,7 @@ struct client {
     int argv_len;           /* Size of argv array (may be more than argc) */
     uint64_t id;            /* Client incremental unique ID. */
     connection *conn;
+    char querybuf[1024];    /* Buffer we use to store client queries*/
     char **argv;            /* Arguments of current command. */
     size_t argv_len_sum;    /* Sum of lengths of objects in argv list. */
     struct siderCommand *cmd;  /*command to be executed. */
@@ -66,7 +68,7 @@ struct client {
     time_t ctime;           /* Client creation time. */
     time_t lastinteraction; /* Time of the last interaction, used for timeout */
     uint64_t flags;         /* Client flags: CLIENT_* macros. */
-
+   
     /* Response buffer */
     int bufpos;
     /* Note that 'buf' must be the last field of client struct, because memory
@@ -126,4 +128,10 @@ int formatCommand(char * s);
 void acceptTcpHandler(eventloop *el, int fd, void *privdata, int mask);
 void readQueryFromClient(connection *conn);
 
+/* This function is called every time, in the client structure 'c', there is
+ * more query buffer to process, because we read more data from the socket
+ * or because a client was blocked and later reactivated, so there could be
+ * pending query buffer, already representing a full command, to process.
+ * return C_ERR in case the client was freed during the processing */
+int processInputBuffer(client *c);
 #endif // SERVER_H_
