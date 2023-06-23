@@ -10,6 +10,17 @@ void clientAcceptHandler(connection *conn);
 void freeClient(client *c);
 client *createClient(connection *conn);
 
+void clientAcceptHandler(connection *conn) {
+    client *c = connGetPrivateData(conn);
+
+    if (connGetState(conn) != CONN_STATE_CONNECTED) {
+        freeClient(c);
+        return;
+    }
+
+    server.stat_numconnections++;
+}
+
 void readQueryFromClient(connection *conn) {
     client *c = connGetPrivateData(conn);
 }
@@ -48,23 +59,29 @@ void acceptTcpHandler(eventloop *el, int fd, void *privdata, int mask) {
 
 client *createClient(connection *conn) {
     client *c = malloc(sizeof(client));
-    connSetReadHandler(conn, readQueryFromClient);
+    if (conn) {
+        connSetReadHandler(conn, readQueryFromClient);
+        connSetPrivateData(conn, c);
+    } 
+
+    c->argc = 0;
+    c->argv_len = 0;
+    c->id = server.next_client_id++;
+    c->conn = conn;
+    c->argv = NULL;
+    c->argv_len_sum = 0;
+    c->cmd = NULL;
+    c->bulklen = -1;
+    c->sentlen = 0;
+    c->ctime = c->lastinteraction = server.unixtime;
+    c->flags = 0;
+    c->bufpos = 0;
+    
     return c;
 }
 
 void freeClient(client *c) {
    return;
-}
-
-void clientAcceptHandler(connection *conn) {
-    client *c = connGetPrivateData(conn);
-
-    if (connGetState(conn) != CONN_STATE_CONNECTED) {
-        freeClient(c);
-        return;
-    }
-
-    server.stat_numconnections++;
 }
 
 static void acceptCommonHandler(connection *conn, int flags) {

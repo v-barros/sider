@@ -69,7 +69,6 @@ struct client {
 
     /* Response buffer */
     int bufpos;
-    size_t buf_usable_size; /* Usable size of buffer. */
     /* Note that 'buf' must be the last field of client struct, because memory
      * allocator may give us more memory than our apply for reducing fragments,
      * but we want to make full use of given memory, i.e. we may access the
@@ -110,6 +109,8 @@ struct server_resp {
 struct server_str {
     int port;
     int stat_numconnections;
+    uint64_t next_client_id;
+    time_t unixtime;
     struct _eventloop* el;
     server_resp *reply;
 };
