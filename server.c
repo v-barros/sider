@@ -62,7 +62,9 @@ void serverConfInit(){
     server.port=PORT;
     server.reply=create_resp();
     eventloop* ev_loop= init_loop(server.port);
-
+    server.next_client_id =0;
+    server.stat_numconnections=0;
+    server.unixtime=time(NULL);
     server.el = ev_loop;
 
     printf("epoll file descriptor [%d]\n ",ev_loop->epollfd);
