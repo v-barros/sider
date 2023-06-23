@@ -17,12 +17,29 @@ void clientAcceptHandler(connection *conn) {
         freeClient(c);
         return;
     }
-
+    printf("%d - %s\n",__LINE__,__func__);
     server.stat_numconnections++;
 }
 
 void readQueryFromClient(connection *conn) {
     client *c = connGetPrivateData(conn);
+    char buf[1024];
+    int nread,readlen=1024;
+
+    printf("%d - %s\n",__LINE__,__func__);
+    
+    //nread = connRead(c->conn, buf, readlen);
+    if (nread == -1) {
+        if (connGetState(conn) == CONN_STATE_CONNECTED) {
+            return;
+        } else {
+            printf("%s, error: %s\n",__func__,strerror(errno));
+        }
+    } else if (nread == 0) {
+        printf("connection closed by client, %s, error: %s\n",__func__,strerror(errno));
+        freeClient(c);
+    }
+
 }
 
 int accept_con(int fd)
@@ -59,6 +76,9 @@ void acceptTcpHandler(eventloop *el, int fd, void *privdata, int mask) {
 
 client *createClient(connection *conn) {
     client *c = malloc(sizeof(client));
+    if(!c){
+        return NULL;
+    }
     if (conn) {
         connSetReadHandler(conn, readQueryFromClient);
         connSetPrivateData(conn, c);
@@ -66,7 +86,7 @@ client *createClient(connection *conn) {
 
     c->argc = 0;
     c->argv_len = 0;
-    c->id = server.next_client_id++;
+    c->id = ++server.next_client_id;
     c->conn = conn;
     c->argv = NULL;
     c->argv_len_sum = 0;
@@ -76,7 +96,8 @@ client *createClient(connection *conn) {
     c->ctime = c->lastinteraction = server.unixtime;
     c->flags = 0;
     c->bufpos = 0;
-    
+
+    printf("client created, id = %ld\n",c->id);
     return c;
 }
 
@@ -87,18 +108,17 @@ void freeClient(client *c) {
 static void acceptCommonHandler(connection *conn, int flags) {
     client *c;
     char conninfo[100];
-
     if (connGetState(conn) != CONN_STATE_ACCEPTING) {
         connClose(conn);
         return;
     }
-
+    printf("%d - %s\n",__LINE__,__func__);
     /* Create connection and client */
     if ((c = createClient(conn)) == NULL) {
         connClose(conn); /* May be already closed, just ignore errors */
+        printf("client not created\n");
         return;
     }
-
     /* Last chance to keep flags */
     c->flags |= flags;
 
@@ -116,4 +136,5 @@ static void acceptCommonHandler(connection *conn, int flags) {
             freeClient(connGetPrivateData(conn));
         return;
     }
+    printf("%d - %s\n",__LINE__,__func__);
 }
