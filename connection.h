@@ -74,6 +74,11 @@ static inline void connClose(connection *conn) {
     conn->type->close(conn);
 }
 
+static inline int connRead(connection *conn, void *buf, size_t buf_len) {
+    int ret = conn->type->read(conn, buf, buf_len);
+    return ret;
+}
+
 /* Register a read handler using conn->type->set_read_handler, to be called when the connection is readable.
  * If NULL, the existing handler is removed.
  */
