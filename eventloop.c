@@ -21,6 +21,10 @@ eventloop * init_loop(int port){
     ev->epollfd=epollfd;
     int socket = init_conn(port);
     printf("listening socket fd [%d]\n",socket);   
+
+    ev->socketfd=socket;
+    ev->setsize=EVENTS_MAX;
+    
     int i;
     for(i=0;i<EVENTS_MAX;i++){
         set_mask(&ev->events_t[i],NONE);
@@ -28,8 +32,7 @@ eventloop * init_loop(int port){
     /* Create an event handler for accepting new connections in TCP sockets */
     event_create(ev,socket,acceptTcpHandler,READABLE,NULL);
     
-    ev->socketfd=socket;
-    ev->setsize=EVENTS_MAX;
+    
     return ev;
 }
 
@@ -114,9 +117,9 @@ void runloop(eventloop* event_loop){
   
 
     while (1) {
-        now=time(NULL);
+        //now=time(NULL);
        
-        check_timeout(now,&checkpos,event_loop);
+        //check_timeout(now,&checkpos,event_loop);
 
         int number_of_events = epoll_wait(event_loop->epollfd, event_loop->fired_events_t, EVENTS_MAX+1, 20);
         if (number_of_events < 0) {
