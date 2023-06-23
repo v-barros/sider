@@ -194,6 +194,11 @@ void *connGetPrivateData(connection *conn)
     return conn->private_data;
 }
 
+void connSetPrivateData(connection *conn,void* privateData){
+    if(conn)
+        conn->private_data = privateData;
+}
+
 /* Register a write handler, to be called when the connection is writable.
  * If NULL, the existing handler is removed.
  *

@@ -56,6 +56,7 @@ connection *connCreateSocket();
 connection *connCreateAcceptedSocket(int fd);
 /* Get the associated private data pointer */
 void *connGetPrivateData(connection *conn);
+void connSetPrivateData(connection *conn,void* privateData);
 
 int connGetState(connection *conn);
 static void connSocketClose(connection *conn);
