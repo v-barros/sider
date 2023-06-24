@@ -30,34 +30,16 @@ int processMultibulkBuffer (client *c){
             printf("%d - %s\n",__LINE__,__func__);
             return C_ERR;
         }
-        newline++;
-        if(*(newline)!='\n'){
-            printf("%d - %s\n",__LINE__,__func__);
-            return C_ERR;
-        }
-        newline++;
-        if(*(newline)!='$'){
-            printf("%d - %s\n",__LINE__,__func__);
-            return C_ERR;
-        }
 
         /*  passa a len to string2ll by finding next
             CRLF and calculating the offset
             *2\r\n$5\r\nhello\r\n$5\r\nworld\r\n
-                  ^ ^
-            newline = $
-            aux = \r
-            digits len = aux - newline - 1  
-            string2ll should extract the arg len (5)
         */
-        aux = strchr(newline,'\r');
-        ok = string2ll(newline+1,aux-newline-1,&ll);
-
+        ok = string2ll(c->querybuf+1,newline-1-(c->querybuf),&ll);
         
         c->multibulklen = ll;
-        printf("\nmultibulk aux:[%p]\n",aux);
+        printf("\nmultibulk c->querybuf:[%p]\n",c->querybuf);
         printf("\nmultibulk newline: [%p]\n",newline);
-        printf("\naux-newline:[%ld]\n",aux-newline);
         printf("\nmultibulk ll:[%lld]\n",ll);
         /* Setup argv array on client structure */
         if (c->argv) free(c->argv);
