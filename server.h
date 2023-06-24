@@ -7,7 +7,6 @@
 #ifndef SERVER_H_
 #define SERVER_H_
 
-
 #include <stdio.h>
 #include <netdb.h>
 #include <netinet/in.h>
@@ -31,7 +30,10 @@
 #define C_OK 0
 #define C_ERR -1
 
+#define min(a, b) ((a) < (b) ? (a) : (b))
+
 #define CLIENT_PENDING_COMMAND (1<<4)
+
 typedef struct server_resp server_resp;
 typedef struct server_str server_str;
 typedef struct shared_resp shared_resp;
@@ -62,6 +64,7 @@ struct client {
     char **argv;            /* Arguments of current command. */
     size_t argv_len_sum;    /* Sum of lengths of objects in argv list. */
     struct siderCommand *cmd;  /*command to be executed. */
+    int multibulklen;       /* Number of multi bulk arguments left to read. */
     long bulklen;           /* Length of bulk argument in multi bulk request. */
     size_t sentlen;         /* Amount of bytes already sent in the current
                                buffer or object being sent. */
