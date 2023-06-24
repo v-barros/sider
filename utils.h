@@ -47,4 +47,18 @@ int ll2string(char *dst, size_t dstlen, long long svalue);
 /* Return the number of digits of 'v' when converted to string in radix 10.
  * See ll2string() for more information. */
 uint32_t digits10(uint64_t v);
+
+/* Convert a string into a long long. Returns 1 if the string could be parsed
+ * into a (non-overflowing) long long, 0 otherwise. The value will be set to
+ * the parsed value when appropriate.
+ *
+ * Note that this function demands that the string strictly represents
+ * a long long: no spaces or other characters before or after the string
+ * representing the number are accepted, nor zeroes at the start if not
+ * for the string "0" representing the zero number.
+ *
+ * Because of its strictness, it is safe to use this function to check if
+ * you can convert a string into a long long, and obtain back the string
+ * from the number without any loss in the string representation. */
+int string2ll(const char *s, size_t slen, long long *value);
 #endif // UTILS_H_
