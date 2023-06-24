@@ -16,6 +16,7 @@ int processInputBuffer(client *c);
 /* "*2\r\n$5\r\nhello\r\n$5\r\nworld\r\n" */
 int processMultibulkBuffer (client *c){
     char *newline = NULL;
+    char *aux=NULL;
     int ok;
     long long ll=0;
     printf("%d - %s\n",__LINE__,__func__);
@@ -29,21 +30,35 @@ int processMultibulkBuffer (client *c){
             printf("%d - %s\n",__LINE__,__func__);
             return C_ERR;
         }
-        if(newline[1]!='\n'){
+        newline++;
+        if(*(newline)!='\n'){
             printf("%d - %s\n",__LINE__,__func__);
             return C_ERR;
         }
-        printf("%d - %s\n",__LINE__,__func__);
-       
-      //  ok = string2ll(newline,,&ll);
-        /* TODO: find a way to passa a len to string2ll 
-            can solve this by finding next CRLF and calculating
-            the offset
+        newline++;
+        if(*(newline)!='$'){
+            printf("%d - %s\n",__LINE__,__func__);
+            return C_ERR;
+        }
+
+        /*  passa a len to string2ll by finding next
+            CRLF and calculating the offset
             *2\r\n$5\r\nhello\r\n$5\r\nworld\r\n
-                  ^ ^ 
+                  ^ ^
+            newline = $
+            aux = \r
+            digits len = aux - newline - 1  
+            string2ll should extract the arg len (5)
         */
+        aux = strchr(newline,'\r');
+        ok = string2ll(newline+1,aux-newline-1,&ll);
+
+        
         c->multibulklen = ll;
-        printf("\n\nmultibulk newline\n\n [%s]\n",newline);
+        printf("\nmultibulk aux:[%p]\n",aux);
+        printf("\nmultibulk newline: [%p]\n",newline);
+        printf("\naux-newline:[%ld]\n",aux-newline);
+        printf("\nmultibulk ll:[%lld]\n",ll);
         /* Setup argv array on client structure */
         if (c->argv) free(c->argv);
         c->argv_len = min(c->multibulklen, 1024);
