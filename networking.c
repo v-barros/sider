@@ -5,11 +5,53 @@
  *      Author: @v-barros
  */
 #include "server.h"
+#include "utils.h"
 static void acceptCommonHandler(connection *conn, int flags);
 void clientAcceptHandler(connection *conn);
 void freeClient(client *c);
 client *createClient(connection *conn);
+int processMultibulkBuffer (client *c);
+int processInputBuffer(client *c);
 
+/* "*2\r\n$5\r\nhello\r\n$5\r\nworld\r\n" */
+int processMultibulkBuffer (client *c){
+    char *newline = NULL;
+    int ok;
+    long long ll=0;
+    printf("%d - %s\n",__LINE__,__func__);
+
+    if (c->multibulklen == 0) {
+        printf("%d - %s\n",__LINE__,__func__);
+
+        /* Multi bulk length cannot be read without a \r\n */
+        newline = strchr(c->querybuf,'\r');
+        if (newline == NULL) {
+            printf("%d - %s\n",__LINE__,__func__);
+            return C_ERR;
+        }
+        if(newline[1]!='\n'){
+            printf("%d - %s\n",__LINE__,__func__);
+            return C_ERR;
+        }
+        printf("%d - %s\n",__LINE__,__func__);
+       
+      //  ok = string2ll(newline,,&ll);
+        /* TODO: find a way to passa a len to string2ll 
+            can solve this by finding next CRLF and calculating
+            the offset
+            *2\r\n$5\r\nhello\r\n$5\r\nworld\r\n
+                  ^ ^ 
+        */
+        c->multibulklen = ll;
+        printf("\n\nmultibulk newline\n\n [%s]\n",newline);
+        /* Setup argv array on client structure */
+        if (c->argv) free(c->argv);
+        c->argv_len = min(c->multibulklen, 1024);
+       // c->argv = malloc(sizeof(robj*)*c->argv_len);
+    }
+
+    return C_ERR;
+}
 int processInputBuffer(client *c){
 
     /* Don't process more buffers from clients that have already pending
@@ -17,7 +59,8 @@ int processInputBuffer(client *c){
     if (c->flags & CLIENT_PENDING_COMMAND) return C_ERR;
        
     if (!c->querybuf == '*') return C_ERR;
-  //  if (processMultibulkBuffer(c) != C_OK) return C_ERR;
+    printf("multibuk %ld",c->bulklen);
+    if (processMultibulkBuffer(c) != C_OK) return C_ERR;
   //  if (processCommand == C_ERR) return C_ERR;
           
     return C_OK;
@@ -41,7 +84,7 @@ void readQueryFromClient(connection *conn) {
 
     printf("%d - %s\n",__LINE__,__func__);
     
-    nread = connRead(c->conn, buf, readlen);
+    nread = connRead(c->conn, c->querybuf, readlen);
     if (nread == -1) {
         if (connGetState(conn) == CONN_STATE_CONNECTED) {
             return;
@@ -54,7 +97,7 @@ void readQueryFromClient(connection *conn) {
         return;
     }
     processInputBuffer(c);
-    printf("query from client: %s",buf);
+    printf("query from client: %s\n",c->querybuf);
 
 }
 
@@ -107,6 +150,7 @@ client *createClient(connection *conn) {
     c->argv = NULL;
     c->argv_len_sum = 0;
     c->cmd = NULL;
+    c->multibulklen = 0;
     c->bulklen = -1;
     c->sentlen = 0;
     c->ctime = c->lastinteraction = server.unixtime;
