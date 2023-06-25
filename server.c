@@ -30,6 +30,31 @@ static const struct siderCommand userCommandTable[COMMANDS]={
     }
 };
 
+
+int processCommand(client *c){
+
+
+     /* Now lookup the command and check ASAP about trivial error conditions
+     * such as wrong arity, bad command name and so forth. */
+   // c->cmd = c->lastcmd = lookupCommand(c->argv,c->argc);
+    if (!c->cmd) {
+        printf("unknown command '%s'",(char*)c->argv[0]);
+        
+        return C_OK;
+    }
+    /*
+    int is_read_command = (c->cmd->flags & CMD_READONLY) ||
+                           (c->cmd->proc == execCommand && (c->mstate.cmd_flags & CMD_READONLY));
+    int is_write_command = (c->cmd->flags & CMD_WRITE) ||
+                           (c->cmd->proc == execCommand && (c->mstate.cmd_flags & CMD_WRITE)); 
+    */
+
+    /* Exec the command */
+    //call(c,CMD_CALL_FULL);
+
+    return C_OK;
+}
+
 int reply(const char * buff, int len);
 
 void createSharedResps(){

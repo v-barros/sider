@@ -137,4 +137,14 @@ void readQueryFromClient(connection *conn);
  * pending query buffer, already representing a full command, to process.
  * return C_ERR in case the client was freed during the processing */
 int processInputBuffer(client *c);
+
+/* If this function gets called we already read a whole
+ * command, arguments are in the client argv/argc fields.
+ * processCommand() execute the command or prepare the
+ * server for a bulk read from the client.
+ *
+ * If C_OK is returned the client is still alive and valid and
+ * other operations can be performed by the caller. Otherwise
+ * if C_ERR is returned the client was destroyed (i.e. after QUIT). */
+int processCommand(client *c);
 #endif // SERVER_H_

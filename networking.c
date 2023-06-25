@@ -130,7 +130,7 @@ int processInputBuffer(client *c){
        
     if (!c->querybuf == '*') return C_ERR;
     if (processMultibulkBuffer(c) != C_OK) return C_ERR;
-  //  if (processCommand == C_ERR) return C_ERR;
+    if (processCommand(c) == C_ERR) return C_ERR;
           
     return C_OK;
 }
