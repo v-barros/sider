@@ -36,8 +36,8 @@ int processMultibulkBuffer (client *c){
             return C_ERR;
         }
         newline++;
-        /*  passa a len to string2ll by finding next
-            CRLF and calculating the offset
+        /*  pass a len to string2ll() by finding next
+            CRLF and calculating the offset from '*' to '\n'
             *2\r\n$5\r\nhello\r\n$5\r\nworld\r\n
         */
         ok = string2ll(c->querybuf+1,newline-2-(c->querybuf),&ll);
@@ -52,6 +52,7 @@ int processMultibulkBuffer (client *c){
         if (c->argv) free(c->argv);
         c->argv_len = min(c->multibulklen, 1024);
         c->argv = malloc(sizeof(char*)*c->argv_len);
+        c->argc=0;
     }
 
     while(c->multibulklen){
@@ -88,15 +89,38 @@ int processMultibulkBuffer (client *c){
             ok = string2ll(aux+1,newline-2-(aux),&ll);
             if(ok){
                 c->bulklen=ll;
+            }else{
+                free(c->argv);
+                return C_ERR;
             }
         }
+        //Read bulk data
+        /*  check wether there's a '\r\n' after c->bulklen bytes.
+            in other words, checks for the actual size of the argument
+        */
+        if(*(newline+(c->bulklen)+1)!='\r' &&
+           *(newline+(c->bulklen)+2)!='\n'){
+            printf("%d - %s\n",__LINE__,__func__);
+            return C_ERR;
+        }
+
+        /* Allocate memory to store the argument at c->argv*/
+        c->argv[c->argc]=malloc(sizeof(char)*c->bulklen+1);
+        
+        if(!c->argv[c->argc]) abort();
+        memcpy(c->argv[c->argc],newline+1,c->bulklen);
+        c->argv[c->argc][c->bulklen]='\0';
+
+        printf("arg at pos[%d] : '%s'\n",c->argc,c->argv[c->argc]);
         printf("\nmultibulk ll:[%lld]\n",ll);
         printf("\nmultibulk newline: [%s]\n",newline);
-        c->multibulklen--;
-        c->bulklen=-1;
+        
+        c->multibulklen--; // 1 argument less left to read
+        c->bulklen=-1; // next argument's length is unknown
+        c->argc++;  // 1 argument more that we read, use this for indexing at argv
     }
 
-    return C_ERR;
+    return C_OK;
 }
 int processInputBuffer(client *c){
 
