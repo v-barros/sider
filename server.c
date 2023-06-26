@@ -37,18 +37,22 @@ int processCommand(client *c){
      /* Now lookup the command and check ASAP about trivial error conditions
      * such as wrong arity, bad command name and so forth. */
    // c->cmd = c->lastcmd = lookupCommand(c->argv,c->argc);
-    if (!c->cmd) {
+    
+    int i=0;
+    for(i=0;i<COMMANDS;i++){
+        if(!strcmp(c->argv[0],userCommandTable[i].name)){
+            printf("hi, found command: %s\n",userCommandTable[i].name);
+           
+        }
+    }
+    /*
+     if (!c->cmd) {
         printf("unknown command '%s'",(char*)c->argv[0]);
         
         return C_OK;
     }
-    /*
-    int is_read_command = (c->cmd->flags & CMD_READONLY) ||
-                           (c->cmd->proc == execCommand && (c->mstate.cmd_flags & CMD_READONLY));
-    int is_write_command = (c->cmd->flags & CMD_WRITE) ||
-                           (c->cmd->proc == execCommand && (c->mstate.cmd_flags & CMD_WRITE)); 
     */
-
+   
     /* Exec the command */
     //call(c,CMD_CALL_FULL);
 
