@@ -114,10 +114,12 @@ struct server_resp {
 struct server_str {
     int port;
     int stat_numconnections;
+    int commandsNum;
     uint64_t next_client_id;
     time_t unixtime;
     struct _eventloop* el;
     server_resp *reply;
+    siderCommand *commands;
 };
 
 void serverConfInit();
