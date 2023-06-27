@@ -19,11 +19,14 @@ struct server_str server;
 /* Global shared responses to build server responses*/
 struct shared_resp shared;
 
-siderCommand * getComm (int i){
-    if(i>=0 &&
-        i<server.commandsNum) return &server.commands[i];
-    return NULL;
-}
+/*
+  Given a client 'c', match the first argument at c->argv 
+  against the server.commands vector. 
+  Put the found command at c->cmd and returns C_OK if 
+  found, otherwise returns C_ERR.
+*/
+int lookupCommand(client *c);
+
 static const struct siderCommand userCommandTable[COMMANDS]={
     {
         "get",
@@ -35,6 +38,17 @@ static const struct siderCommand userCommandTable[COMMANDS]={
     }
 };
 
+int lookupCommand(client *c){
+    int i=0;
+    for(i=0;i<server.commandsNum;i++){
+        if(!strcmp(c->argv[0],server.commands[i].name)){
+            c->cmd=&server.commands[i];
+            return C_OK;
+        }
+    }
+    return C_ERR;
+}
+
 
 int processCommand(client *c){
 
@@ -43,20 +57,12 @@ int processCommand(client *c){
      * such as wrong arity, bad command name and so forth. */
    // c->cmd = c->lastcmd = lookupCommand(c->argv,c->argc);
     
-    int i=0;
-    for(i=0;i<COMMANDS;i++){
-        if(!strcmp(c->argv[0],userCommandTable[i].name)){
-            c->cmd=getComm(i);
-        }
-    }
-    
-     if (!c->cmd) {
+   
+    if(lookupCommand(c)==C_ERR){
         printf("unknown command '%s'",(char*)c->argv[0]);
-        
         return C_OK;
     }
-    printf("found command: %s\n",c->cmd->name);
-    
+     
    
     /* Exec the command */
     //call(c,CMD_CALL_FULL);
