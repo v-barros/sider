@@ -19,6 +19,11 @@ struct server_str server;
 /* Global shared responses to build server responses*/
 struct shared_resp shared;
 
+siderCommand * getComm (int i){
+    if(i>=0 &&
+        i<server.commandsNum) return &server.commands[i];
+    return NULL;
+}
 static const struct siderCommand userCommandTable[COMMANDS]={
     {
         "get",
@@ -41,17 +46,17 @@ int processCommand(client *c){
     int i=0;
     for(i=0;i<COMMANDS;i++){
         if(!strcmp(c->argv[0],userCommandTable[i].name)){
-            printf("hi, found command: %s\n",userCommandTable[i].name);
-           
+            c->cmd=getComm(i);
         }
     }
-    /*
+    
      if (!c->cmd) {
         printf("unknown command '%s'",(char*)c->argv[0]);
         
         return C_OK;
     }
-    */
+    printf("found command: %s\n",c->cmd->name);
+    
    
     /* Exec the command */
     //call(c,CMD_CALL_FULL);
@@ -95,6 +100,16 @@ void serverConfInit(){
     server.stat_numconnections=0;
     server.unixtime=time(NULL);
     server.el = ev_loop;
+    server.commands = (siderCommand*) malloc(sizeof(siderCommand)*COMMANDS);
+        if(!server.commands)
+            abort();
+    
+    server.commandsNum=COMMANDS;
+    int i=0;
+    for(i=0;i<COMMANDS;i++){
+        server.commands[i]=userCommandTable[i];
+    }
+        
 
     printf("epoll file descriptor [%d]\n ",ev_loop->epollfd);
     printf("server running!\n using port [%d]\n", server.port);
