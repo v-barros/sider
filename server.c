@@ -6,7 +6,6 @@
  */
 #include <stddef.h>
 #include "connection.h"
-#include "ht.h"
 #include "utils.h"
 #include <assert.h>
 #include "server.h"
@@ -62,10 +61,9 @@ int processCommand(client *c){
         printf("unknown command '%s'",(char*)c->argv[0]);
         return C_OK;
     }
-     
    
     /* Exec the command */
-    //call(c,CMD_CALL_FULL);
+    c->cmd->proc(c);
 
     return C_OK;
 }
@@ -119,6 +117,8 @@ void serverConfInit(){
 
     printf("epoll file descriptor [%d]\n ",ev_loop->epollfd);
     printf("server running!\n using port [%d]\n", server.port);
+
+    server.ht_table=createTable();
 }
 
 int reply(const char * buff, int len){

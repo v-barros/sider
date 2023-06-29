@@ -15,6 +15,7 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include "ht.h"
 #include "eventloop.h"
 #include "string.h"
 #include "connection.h"
@@ -42,6 +43,9 @@ typedef struct client client;
 typedef struct siderCommand siderCommand;
 typedef void command_proc(client *);
 
+void getCommand(client*);
+
+void setCommand(client*);
 
 /* A result structure for the various getkeys function calls. It lists the
  * keys as indices to the provided argv.
@@ -89,10 +93,6 @@ struct siderCommand{
     command_get_keys *getKeys;
 };
 
-void getCommand(client*);
-
-void setCommand(client*);
-
 /*Global server*/
 extern struct server_str server;
 
@@ -120,6 +120,7 @@ struct server_str {
     struct _eventloop* el;
     server_resp *reply;
     siderCommand *commands;
+    Table * ht_table;
 };
 
 void serverConfInit();
