@@ -41,8 +41,17 @@ Table * createTable(){
 	
 	if(t!=NULL){
 		t->tableSize = TABLE_SIZE;
-		t->numberOfEntries=0;
+		t->numOfEntries=0;
 		memset(t->table, 0, (t->tableSize)* sizeof(void*) );	
+		t->getValue=getValue;
+		t->put=put;
+		t->containsKey=containsKey;
+		t->containsValue=containsValue;
+		t->removeByKey=removeByKey;
+		t->numberOfEntries=numberOfEntries;
+		t->getTableSize=tableSize;
+		t->debugTable=debugTable;
+
 	}
 	return t;
 }
@@ -115,7 +124,7 @@ uint32_t hashValidate(unsigned long fullHash){
 }
 
 const char * getValue(Table * table,const char * key){
-	if(table->numberOfEntries<=0) return NULL;
+	if(table->numOfEntries<=0) return NULL;
 	
 	unsigned long fullHash = hashGenerate(key);
 	uint32_t i = hashValidate(fullHash);
@@ -151,7 +160,7 @@ const char * put(Table * table,const char * key, const char * value){
 		newNode = (Node*)createNode(k_ptr, v_ptr, fullHash);
 		
 		*(table->table+i)=newNode;
-		table->numberOfEntries++;
+		table->numOfEntries++;
 
 	}else if(!(strcmp(node->key,key))){
 		/*key is at the first node of the bucket*/
@@ -167,7 +176,7 @@ const char * put(Table * table,const char * key, const char * value){
 		newNode = (Node*)createNode(k_ptr, v_ptr, fullHash);
 						
 		node->next=newNode;
-		table->numberOfEntries++;
+		table->numOfEntries++;
 	}else{	
 		/* node->next->value is equal value, so we free it and change node->next->value to v_ptr */
 				
@@ -178,7 +187,7 @@ const char * put(Table * table,const char * key, const char * value){
 }
 
 int containsKey(Table * table,const char * key){
-	if(table->numberOfEntries<=0)return 0;
+	if(table->numOfEntries<=0)return 0;
 	
 	unsigned long fullHash = hashGenerate(key);
 	uint32_t i = hashValidate(fullHash);
@@ -191,7 +200,7 @@ int containsKey(Table * table,const char * key){
 }
 
 int containsValue(Table * table,const char * value){
-	if(table->numberOfEntries<=0)return 0;
+	if(table->numOfEntries<=0)return 0;
 
 	int i ;
 	Node * node = table->table[0];
@@ -216,11 +225,11 @@ int tableSize(Table * table){
 }
 
 int numberOfEntries(Table * table){
-	return table->numberOfEntries;
+	return table->numOfEntries;
 }
 
 int removeByKey(Table * table,const char * key){
-	if(table->numberOfEntries<=0) return 0;
+	if(table->numOfEntries<=0) return 0;
 
 	unsigned long fullHash = hashGenerate(key);
 	uint32_t i = hashValidate(fullHash);
@@ -253,7 +262,7 @@ int removeByKey(Table * table,const char * key){
 	
 	free((char *)nodeToDelete->value);
 	free(nodeToDelete);
-	table->numberOfEntries--;
+	table->numOfEntries--;
 	return 1;
 }
 

@@ -9,6 +9,8 @@
 #define HASHTABLE_H_
 #define TABLE_SIZE 100000
 #include <stdint.h>
+typedef struct Node Node;
+typedef struct Table Table;
 
 struct Node{
 	unsigned long hash;
@@ -16,14 +18,20 @@ struct Node{
 	const char * value;
 	struct Node * next;
 };
-typedef struct Node Node;
 
 struct Table{
 	uint32_t tableSize;
-	uint32_t numberOfEntries;
+	uint32_t numOfEntries;
+	const char *(*getValue)(Table * table,const char * key);
+	const char *(* put)(Table * table,const char * key, const char * value);
+	int (*containsKey)(Table * table,const char * key);
+	int (*containsValue)(Table * table,const char * value);
+	int (*removeByKey)(Table * table,const char * key);
+	int (*numberOfEntries)(Table * table);
+	int (*getTableSize)(Table * table);
+	void (*debugTable)(Table * table );
 	Node * table[TABLE_SIZE];
 };
-typedef struct Table Table;
 
 /**
  *  Alloc a new table struct with default size defined by TABLE_SIZE macro and return its pointer
