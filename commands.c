@@ -31,17 +31,19 @@ void getCommand(client *c){
 }
 
 void setCommand(client *c){
-    /*
-    char key[maxkeylength];
-    char value[maxvaluelength];
-    memset(key,0,maxkeylength);
-    memset(value,0,maxkeylength);
-    trimSetArgs(args,key,value);
-    printf("SET key= \"%s\" value= \"%s\"",key,value);
-    if(put(table,key,value))
+    int ret;
+    if(c->argc!=3)
+        ret =0;
+
+
+    printf("SET key= \"%s\" value= \"%s\"\n",c->argv[1],c->argv[2]);
+    printf("table size before command: %d\n",server.ht_table->numberOfEntries(server.ht_table));
+    if(server.ht_table->put(server.ht_table,c->argv[1],c->argv[2]));
+    printf("table size after command: %d\n",server.ht_table->numberOfEntries(server.ht_table));
+   /* if(put(table,key,value))
         addReplyBool(reply,1);
     else
         addReplyBool(reply,0);
-*/
+    */
 }
 
