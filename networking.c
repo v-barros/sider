@@ -44,9 +44,9 @@ int processMultibulkBuffer (client *c){
         
         c->multibulklen = ll;
        
-        printf("\nmultibulk c->querybuf:[%p]\n",c->querybuf);
-        printf("\nmultibulk newline: [%p]\n",newline);
-        printf("\nmultibulk ll:[%lld]\n",ll);
+     //   printf("\nmultibulk c->querybuf:[%p]\n",c->querybuf);
+     //   printf("\nmultibulk newline: [%p]\n",newline);
+     //   printf("\nmultibulk ll:[%lld]\n",ll);
         
         /* Setup argv array on client structure */
         if (c->argv) free(c->argv);
@@ -111,9 +111,9 @@ int processMultibulkBuffer (client *c){
         memcpy(c->argv[c->argc],newline+1,c->bulklen);
         c->argv[c->argc][c->bulklen]='\0';
 
-        printf("arg at pos[%d] : '%s'\n",c->argc,c->argv[c->argc]);
-        printf("\nmultibulk ll:[%lld]\n",ll);
-        printf("\nmultibulk newline: [%s]\n",newline);
+       // printf("arg at pos[%d] : '%s'\n",c->argc,c->argv[c->argc]);
+        //printf("\nmultibulk ll:[%lld]\n",ll);
+        //printf("\nmultibulk newline: [%s]\n",newline);
         
         c->multibulklen--; // 1 argument less left to read
         c->bulklen=-1; // next argument's length is unknown
@@ -166,7 +166,7 @@ void readQueryFromClient(connection *conn) {
         return;
     }
     processInputBuffer(c);
-    printf("query from client: %s\n",c->querybuf);
+  //  printf("query from client: %s\n",c->querybuf);
 
 }
 

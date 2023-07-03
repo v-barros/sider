@@ -17,16 +17,18 @@
 #define maxvaluelength 1000
 
 void getCommand(client *c){
-    /*
-    char key[maxkeylength];
-    const char * value=NULL;
-    memset(key,0,maxkeylength);
-    trimGetArg(args,key);
-    //printf("GET key= \"%s\"",key);
-    value = getValue(table,key);
-   // if(value!=NULL)
-    putText(reply,value);
-    */
+    
+    const char * resp;
+    int ret;
+    if(c->argc!=2)
+        ret=0;
+    printf("GET key= \"%s\"\n",c->argv[1]);
+    resp=server.ht_table->getValue(server.ht_table,c->argv[1]);
+    if(resp==NULL){
+        printf("No key\n");
+    }else{
+        printf("value = \"%s\"\n",resp);
+    }
     
 }
 
@@ -40,10 +42,5 @@ void setCommand(client *c){
     printf("table size before command: %d\n",server.ht_table->numberOfEntries(server.ht_table));
     if(server.ht_table->put(server.ht_table,c->argv[1],c->argv[2]));
     printf("table size after command: %d\n",server.ht_table->numberOfEntries(server.ht_table));
-   /* if(put(table,key,value))
-        addReplyBool(reply,1);
-    else
-        addReplyBool(reply,0);
-    */
 }
 

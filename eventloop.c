@@ -126,7 +126,7 @@ void runloop(eventloop* event_loop){
             printf("epoll_wait error, exit\n");
             break;
         }
-        
+
         for (i = 0; i < number_of_events; i++) {
             mask = 0;
             fe = &event_loop->fired_events_t[i];
@@ -137,7 +137,7 @@ void runloop(eventloop* event_loop){
 
             if (firedmask & EPOLLIN) mask |= READABLE;
             if (firedmask & EPOLLOUT) mask |= WRITABLE;
-            
+            printf("%d - %s\n",__LINE__,__func__);            
             if(mask & READABLE && rv->mask & READABLE)
                 rv->read_event_handler(event_loop,rv->fd,rv->clientData,READABLE);
             if(mask & WRITABLE && rv->mask & WRITABLE)
