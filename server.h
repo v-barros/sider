@@ -75,7 +75,7 @@ struct client {
     time_t ctime;           /* Client creation time. */
     time_t lastinteraction; /* Time of the last interaction, used for timeout */
     uint64_t flags;         /* Client flags: CLIENT_* macros. */
-   
+    int buf_size;           /* response buffer size: REPLY_CHUNK_BYTES*/
     /* Response buffer */
     int bufpos;
     /* Note that 'buf' must be the last field of client struct, because memory

@@ -239,7 +239,7 @@ client *createClient(connection *conn) {
     c->ctime = c->lastinteraction = server.unixtime;
     c->flags = 0;
     c->bufpos = 0;
-
+    c->buf_size=REPLY_CHUNK_BYTES;
     printf("client created, id = %ld\n",c->id);
     return c;
 }
