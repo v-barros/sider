@@ -6,14 +6,14 @@
  */
 #include "resp_parser.h"
 
-void putError(server_resp * rp){
+void putError(server_resp *rp){
     char * s = "$2$KO\r\n";
     memcpy(rp->buffer,s,7);
     rp->bufpos = 7;
 }
 
 //$3$val\r\n
-void putText(server_resp*rp, const char * text){
+void putText(server_resp *rp, const char * text){
     if(!text){
         *(rp->buffer)='$';
         *(rp->buffer+1)='1';
@@ -35,38 +35,38 @@ void putText(server_resp*rp, const char * text){
     rp->bufpos = aux + 5+len;
 }
 
-void addReplyNull(server_resp *rp){
-    addReplyLen(rp,"_\r\n",3);
+void addReplyNull(client *c){
+    addReplyLen(c,"_\r\n",3);
 }
 
-void addReplyBool(server_resp *rp, int b){
-    addReply(rp, b ? shared.cone->text : shared.czero->text);
+void addReplyBool(client *c, int b){
+    addReply(c, b ? shared.cone->text : shared.czero->text);
 }
-void addReplyVerbatim(server_resp *rp, const char *s, size_t len, const char *ext);
+void addReplyVerbatim(client *c, const char *s, size_t len, const char *ext);
 
-void addReplyBulk(server_resp *rp, const char *str){
-    addReplyBulkLen(rp,str);
-    addReply(rp,str);
-    addReply(rp,shared.crlf->text);
+void addReplyBulk(client *c, const char *str){
+    addReplyBulkLen(c,str);
+    addReply(c,str);
+    addReply(c,shared.crlf->text);
 }
 
-void addReplyBulkLen(server_resp *rp, const char *s) {
+void addReplyBulkLen(client *c, const char *s) {
     size_t len = strlen(s);
 
-    addReplyLongLongWithPrefix(rp,len,'$');
+    addReplyLongLongWithPrefix(c,len,'$');
 }
-void addReplyBulkCString(server_resp *rp, const char *s);
-void addReplyBulkCBuffer(server_resp *rp, const void *p, size_t len);
-void addReplyBulkLongLong(server_resp *rp, long long ll);
-void addReplyErrorObject(server_resp *rp, const char *err);
-void addReplyOrErrorObject(server_resp *rp, const char *reply);
-void addReplyError(server_resp *rp, const char *err);
-void addReplyStatus(server_resp *rp, const char *status);
-void addReplyDouble(server_resp *rp, double d);
+void addReplyBulkCString(client *c, const char *s);
+void addReplyBulkCBuffer(client *c, const void *p, size_t len);
+void addReplyBulkLongLong(client *c, long long ll);
+void addReplyErrorObject(client *c, const char *err);
+void addReplyOrErrorObject(client *c, const char *reply);
+void addReplyError(client *c, const char *err);
+void addReplyStatus(client *c, const char *status);
+void addReplyDouble(client *c, double d);
 
 /* Add a long long as integer reply or bulk len / multi bulk count.
  * Basically this is used to output <prefix><long long><crlf>. */
-void addReplyLongLongWithPrefix(server_resp *rp, long long ll, char prefix){
+void addReplyLongLongWithPrefix(client *c, long long ll, char prefix){
     char buf[128];
     int len;
 
@@ -74,10 +74,10 @@ void addReplyLongLongWithPrefix(server_resp *rp, long long ll, char prefix){
      * so we have a few shared objects to use if the integer is small
      * like it is most of the times. */
     if (prefix == '*' && ll < OBJ_SHARED_BULKHDR_LEN && ll >= 0) {
-        addReply(rp,shared.mbulkhdr[ll]->text);
+        addReply(c,shared.mbulkhdr[ll]->text);
         return;
     } else if (prefix == '$' && ll < OBJ_SHARED_BULKHDR_LEN && ll >= 0) {
-        addReply(rp,shared.bulkhdr[ll]->text);
+        addReply(c,shared.bulkhdr[ll]->text);
         return;
     }
 
@@ -85,33 +85,33 @@ void addReplyLongLongWithPrefix(server_resp *rp, long long ll, char prefix){
     len = ll2string(buf+1,sizeof(buf)-1,ll);
     buf[len+1] = '\r';
     buf[len+2] = '\n';
-    addReplyLen(rp,buf,len+3);
+    addReplyLen(c,buf,len+3);
 }
-void addReplyBigNum(server_resp *rp, const char* num, size_t len);
-void addReplyHumanLongDouble(server_resp *rp, long double d);
-void addReplyLongLong(server_resp *rp, long long ll);
-void addReplyArrayLen(server_resp *rp, long length);
-void addReplyMapLen(server_resp *rp, long length);
-void addReplySetLen(server_resp *rp, long length);
-void addReplyAttributeLen(server_resp *rp, long length);
-void addReplyPushLen(server_resp *rp, long length);
-void addReplyHelp(server_resp *rp, const char **help);
+void addReplyBigNum(client *c, const char* num, size_t len);
+void addReplyHumanLongDouble(client *c, long double d);
+void addReplyLongLong(client *c, long long ll);
+void addReplyArrayLen(client *c, long length);
+void addReplyMapLen(client *c, long length);
+void addReplySetLen(client *c, long length);
+void addReplyAttributeLen(client *c, long length);
+void addReplyPushLen(client *c, long length);
+void addReplyHelp(client *c, const char **help);
 
-size_t _addReplyToBuffer(server_resp *rp, const char *s, size_t len) {
-    size_t available = rp->buflen - rp->bufpos;
+size_t _addReplyToBuffer(client *c, const char *s, size_t len) {
+    size_t available = c->buf_size - c->bufpos;
 
     size_t reply_len = len > available ? available : len;
     
-    memcpy(rp->buffer+rp->bufpos,s,reply_len);
-    rp->bufpos+=reply_len;
+    memcpy(c->buf+c->bufpos,s,reply_len);
+    c->bufpos+=reply_len;
     return reply_len;
 }
 
 /* Add the 'str' string representation to the server output buffer. */
-void addReplyLen(server_resp *rp, const char *str,size_t len) {
-   _addReplyToBuffer(rp,str,len);
+void addReplyLen(client *c, const char *str,size_t len) {
+   _addReplyToBuffer(c,str,len);
 }
 
-void addReply(server_resp *rp, const char *str) {
-   _addReplyToBuffer(rp,str,strlen(str));
+void addReply(client *c, const char *str) {
+   _addReplyToBuffer(c,str,strlen(str));
 }
