@@ -7,9 +7,7 @@
 #ifndef RESP_PARSER_H_
 #define RESP_PARSER_H_
 #include "server.h"
-void putError(server_resp *);
 
-void putText(server_resp*, const char * text);
 
 void addReplyNull(client *c);
 void addReplyBool(client *c, int b);

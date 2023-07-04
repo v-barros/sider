@@ -6,33 +6,33 @@
  */
 #include "resp_parser.h"
 
-void putError(server_resp *rp){
+void putError(client *c){
     char * s = "$2$KO\r\n";
-    memcpy(rp->buffer,s,7);
-    rp->bufpos = 7;
+    memcpy(c->buf,s,7);
+    c->bufpos = 7;
 }
 
 //$3$val\r\n
-void putText(server_resp *rp, const char * text){
+void putText(client *c, const char * text){
     if(!text){
-        *(rp->buffer)='$';
-        *(rp->buffer+1)='1';
-        *(rp->buffer+2)='$';
-        *(rp->buffer+3)='\r';
-        *(rp->buffer+4)='\n';
-        rp->bufpos = 5;
+        *(c->buf)='$';
+        *(c->buf+1)='1';
+        *(c->buf+2)='$';
+        *(c->buf+3)='\r';
+        *(c->buf+4)='\n';
+        c->bufpos = 5;
         return;
     }
     int aux,len = strlen(text);
-    *(rp->buffer)='$';
-    aux = toString(len,rp->buffer+1);
-    rp->buffer[aux+1]='$';
+    *(c->buf)='$';
+    aux = toString(len,c->buf+1);
+    c->buf[aux+1]='$';
 
-    memcpy(rp->buffer+aux+2,text,len);
+    memcpy(c->buf+aux+2,text,len);
 
-    rp->buffer[aux+2+len]='\r';
-    rp->buffer[aux+3+len]='\n';
-    rp->bufpos = aux + 5+len;
+    c->buf[aux+2+len]='\r';
+    c->buf[aux+3+len]='\n';
+    c->bufpos = aux + 5+len;
 }
 
 void addReplyNull(client *c){

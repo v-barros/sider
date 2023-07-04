@@ -35,7 +35,6 @@
 
 #define CLIENT_PENDING_COMMAND (1<<4)
 
-typedef struct server_resp server_resp;
 typedef struct server_str server_str;
 typedef struct shared_resp shared_resp;
 typedef struct client client;
@@ -105,11 +104,6 @@ struct shared_resp{
     *mbulkhdr[OBJ_SHARED_BULKHDR_LEN];
 };
 
-struct server_resp {
-    int bufpos;
-    int buflen;
-    char buffer[OUTPUT_BUF_LEN]; 
-};
 
 struct server_str {
     int port;
@@ -118,7 +112,6 @@ struct server_str {
     uint64_t next_client_id;
     time_t unixtime;
     struct _eventloop* el;
-    server_resp *reply;
     siderCommand *commands;
     Table * ht_table;
 };
@@ -126,8 +119,6 @@ struct server_str {
 void serverConfInit();
 
 void createSharedResps();
-
-server_resp * create_resp();
 
 int formatCommand(char * s);
 

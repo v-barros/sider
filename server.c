@@ -98,7 +98,6 @@ void createSharedResps(){
 
 void serverConfInit(){
     server.port=PORT;
-    server.reply=create_resp();
     eventloop* ev_loop= init_loop(server.port);
     server.next_client_id =0;
     server.stat_numconnections=0;
@@ -134,14 +133,6 @@ int formatCommand(char * s){
         }
     }    
     return -1;
-}
-
-server_resp * create_resp(){
-    server_resp * sr = (server_resp *) malloc(sizeof(server_resp));
-    assert(sr!=NULL);
-    sr->bufpos=0;
-    sr->buflen=OUTPUT_BUF_LEN;
-    return sr;
 }
 
 int main(void){
