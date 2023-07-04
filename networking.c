@@ -13,6 +13,20 @@ client *createClient(connection *conn);
 int processMultibulkBuffer (client *c);
 int processInputBuffer(client *c);
 
+int unlinkClient(client *c){
+
+    /* Certain operations must be done only if the client has an active connection.
+     * If the client was already unlinked or if it's a "fake client" the
+     * conn is already set to NULL. */
+    if (c->conn) {
+        connClose(c->conn);
+        c->conn = NULL;
+    }
+
+
+}
+
+
 /* "*2\r\n$5\r\nhello\r\n$5\r\nworld\r\n" */
 int processMultibulkBuffer (client *c){
     char *newline = NULL;
@@ -231,7 +245,16 @@ client *createClient(connection *conn) {
 }
 
 void freeClient(client *c) {
-   return;
+
+    free(c->argv);
+
+    /* Unlink the client: this will close the socket, remove the I/O
+     * handlers, and remove references of the client from different
+     * places where active clients may be referenced. */
+    unlinkClient(c);
+
+    free(c);
+    return;
 }
 
 static void acceptCommonHandler(connection *conn, int flags) {

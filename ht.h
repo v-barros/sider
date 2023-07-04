@@ -40,7 +40,7 @@ Table * createTable();
 
 /**
  * Lookup for a key on the given table
- * If the key is present, returns its value, else, returns an empty string ""
+ * If the key is present, returns its value, else, returns NULL
  * */
 const char * getValue(Table * table,const char * key);
 

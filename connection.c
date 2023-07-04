@@ -148,7 +148,7 @@ static void connSocketClose(connection *conn)
 {
     if (conn->fd != -1)
     {
-        // event_rm(server.el,conn->fd);
+        event_close(server.el,conn->fd,READABLE|WRITABLE);
         close(conn->fd);
         conn->fd = -1;
     }

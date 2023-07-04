@@ -51,7 +51,7 @@ struct _eventloop{
 eventloop * init_loop(int port);
 void runloop(eventloop* event_loop);
 int event_create(eventloop *event_loop,int event_fd, event_handler callback,int mask,void * clientData);
-void event_rm(registered_event * ev, int epfd);
+void event_close(eventloop* eventLoop, int event_fd,int mask);
 void event_add(eventloop* eventLoop, int event_fd,int mask);
 
 /*event handlers (callback functions)*/
