@@ -64,6 +64,11 @@ int processCommand(client *c){
    
     /* Exec the command */
     c->cmd->proc(c);
+    printf("%d - %s\n", __LINE__,__func__);
+    if(clientHasPendingReplies(c)){
+        printf("%d - %s\n", __LINE__,__func__);
+        connSetWriteHandler(c->conn,sendReplyToClient);
+    }
 
     return C_OK;
 }
