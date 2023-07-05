@@ -13,6 +13,49 @@ client *createClient(connection *conn);
 int processMultibulkBuffer (client *c);
 int processInputBuffer(client *c);
 
+int _writeToClient(client *c, ssize_t *nwritten) {
+    *nwritten = 0;
+   
+    if (c->bufpos > 0) {
+        *nwritten = connWrite(c->conn,c->buf+c->sentlen,c->bufpos-c->sentlen);
+        if (*nwritten <= 0) return C_ERR;
+        c->sentlen += *nwritten;
+
+        /* If the buffer was sent, set bufpos to zero to continue with
+         * the remainder of the reply. */
+        if ((int)c->sentlen == c->bufpos){
+            c->bufpos = 0;
+            c->sentlen = 0;
+        }
+    }
+
+    return C_OK;
+}
+
+/* Write data in output buffers to client. Return C_OK if the client
+ * is still valid after the call, C_ERR if it was freed because of some
+ * error. 
+ * */
+int writeToClient(client *c, int handler_installed) {
+
+    ssize_t nwritten = 0, totwritten = 0;
+
+    while(clientHasPendingReplies(c)) {
+        int ret = _writeToClient(c, &nwritten);
+        if (ret == C_ERR) break;
+        totwritten += nwritten;
+    }
+    if (nwritten == -1) {
+        printf("Error writing to client %d", c->id);
+        return C_ERR;
+    }
+    if (!clientHasPendingReplies(c)) {
+        c->sentlen = 0;
+        connSetWriteHandler(c->conn, NULL);
+    }
+    return C_OK;
+}
+
 int clientHasPendingReplies(client *c){
     return c->bufpos;
 }
@@ -20,7 +63,7 @@ int clientHasPendingReplies(client *c){
 /* Write event handler. Just send data to the client. */
 void sendReplyToClient(connection *conn) {
     client *c = connGetPrivateData(conn);
-    //writeToClient(c,1);
+    writeToClient(c,1);
 }
 
 int unlinkClient(client *c){
