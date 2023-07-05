@@ -214,16 +214,15 @@ void connSetPrivateData(connection *conn,void* privateData){
  * If NULL, the existing handler is removed.
  *
  */
-static int connSocketSetWriteHandler(connection *conn, ConnectionCallbackFunc func)
-{
-
+static int connSocketSetWriteHandler(connection *conn, ConnectionCallbackFunc func){
+    if (func == conn->write_handler) return C_OK;
+    conn->write_handler = func;
     if (!conn->write_handler)
-    {
-    }
-    //    event_rm(server.el,conn->fd);
-    else if (event_create(server.el, conn->fd, conn->type->events_handler,
-                          WRITABLE, conn) == C_ERR)
-        return C_ERR;
+        event_close(server.el,conn->fd,WRITABLE);
+    else
+        if (event_create(server.el,conn->fd,
+                            conn->type->events_handler,
+                                WRITABLE,conn) == C_ERR) return C_ERR;
     return C_OK;
 }
 
