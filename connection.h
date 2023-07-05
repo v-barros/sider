@@ -79,6 +79,17 @@ static inline int connRead(connection *conn, void *buf, size_t buf_len) {
     return ret;
 }
 
+/* Write to connection, behaves the same as write(2).
+ *
+ * Like write(2), a short write is possible. A -1 return indicates an error.
+ *
+ * The caller should NOT rely on errno. Testing for an EAGAIN-like condition, use
+ * connGetState() to see if the connection state is still CONN_STATE_CONNECTED.
+ */
+static inline int connWrite(connection *conn, const void *data, size_t data_len) {
+    return conn->type->write(conn, data, data_len);
+}
+
 /* Register a read handler using conn->type->set_read_handler, to be called when the connection is readable.
  * If NULL, the existing handler is removed.
  */
