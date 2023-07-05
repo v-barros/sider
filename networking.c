@@ -13,6 +13,16 @@ client *createClient(connection *conn);
 int processMultibulkBuffer (client *c);
 int processInputBuffer(client *c);
 
+int clientHasPendingReplies(client *c){
+    return c->bufpos;
+}
+
+/* Write event handler. Just send data to the client. */
+void sendReplyToClient(connection *conn) {
+    client *c = connGetPrivateData(conn);
+    //writeToClient(c,1);
+}
+
 int unlinkClient(client *c){
 
     /* Certain operations must be done only if the client has an active connection.
@@ -22,8 +32,6 @@ int unlinkClient(client *c){
         connClose(c->conn);
         c->conn = NULL;
     }
-
-
 }
 
 
@@ -156,6 +164,7 @@ void clientAcceptHandler(connection *conn) {
         freeClient(c);
         return;
     }
+
     printf("%d - %s\n",__LINE__,__func__);
     server.stat_numconnections++;
 }
@@ -181,7 +190,6 @@ void readQueryFromClient(connection *conn) {
     }
     processInputBuffer(c);
   //  printf("query from client: %s\n",c->querybuf);
-
 }
 
 int accept_con(int fd)

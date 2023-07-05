@@ -141,4 +141,10 @@ int processInputBuffer(client *c);
  * other operations can be performed by the caller. Otherwise
  * if C_ERR is returned the client was destroyed (i.e. after QUIT). */
 int processCommand(client *c);
+
+int clientHasPendingReplies(client *c);
+
+/* Write event handler. Just send data to the client. */
+void sendReplyToClient(connection *conn);
+
 #endif // SERVER_H_
