@@ -35,12 +35,12 @@ void getCommand(client *c){
 void setCommand(client *c){
     int ret;
     if(c->argc!=3)
-        ret =0;
-
+       addReply(c,"syntax error");
 
     printf("SET key= \"%s\" value= \"%s\"\n",c->argv[1],c->argv[2]);
     printf("table size before command: %d\n",server.ht_table->numberOfEntries(server.ht_table));
     if(server.ht_table->put(server.ht_table,c->argv[1],c->argv[2]));
     printf("table size after command: %d\n",server.ht_table->numberOfEntries(server.ht_table));
+    addReply(c, shared.ok->text);
 }
 
