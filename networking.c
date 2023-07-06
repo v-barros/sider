@@ -6,6 +6,8 @@
  */
 #include "server.h"
 #include "utils.h"
+#include "resp_parser.h"
+
 static void acceptCommonHandler(connection *conn, int flags);
 void clientAcceptHandler(connection *conn);
 void freeClient(client *c);
@@ -46,7 +48,7 @@ int writeToClient(client *c, int handler_installed) {
         totwritten += nwritten;
     }
     if (nwritten == -1) {
-        printf("Error writing to client %d", c->id);
+        printf("Error writing to client %ld", c->id);
         return C_ERR;
     }
     if (!clientHasPendingReplies(c)) {
@@ -194,7 +196,13 @@ int processInputBuffer(client *c){
     if (c->flags & CLIENT_PENDING_COMMAND) return C_ERR;
        
     if (!c->querybuf == '*') return C_ERR;
-    if (processMultibulkBuffer(c) != C_OK) return C_ERR;
+    if (processMultibulkBuffer(c) != C_OK){
+        printf("%d - %s\n",__LINE__,__func__);
+        addReply(c,"Invalid format");
+        addReply(c,shared.crlf->text);
+        connSetWriteHandler(c->conn,sendReplyToClient);
+        return C_ERR;
+    } 
     if (processCommand(c) == C_ERR) return C_ERR;
           
     return C_OK;
