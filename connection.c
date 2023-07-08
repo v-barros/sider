@@ -36,7 +36,7 @@ static int connSocketAccept(connection *conn, ConnectionCallbackFunc accept_hand
     if (conn->state != CONN_STATE_ACCEPTING)
         return C_ERR;
     conn->state = CONN_STATE_CONNECTED;
-
+    printf("%d - %s\n",__LINE__,__func__);
     return callHandler(conn, accept_handler);
 }
 
@@ -59,7 +59,7 @@ ConnectionType CT_Socket = {
 
 connection *connCreateSocket()
 {
-    connection *conn = malloc(sizeof(connection));
+    connection *conn = calloc(sizeof(connection),1);
     conn->type = &CT_Socket;
     conn->fd = -1;
 
@@ -231,17 +231,22 @@ static int connSocketSetWriteHandler(connection *conn, ConnectionCallbackFunc fu
  */
 static int connSocketSetReadHandler(connection *conn, ConnectionCallbackFunc func)
 {
+    printf("%d - %s\n", __LINE__,__func__);
     if (func == conn->read_handler)
         return C_OK;
-
+    printf("%d - %s\n", __LINE__,__func__);
     conn->read_handler = func;
     if (!conn->read_handler)
     {
+        printf("%d - %s\n", __LINE__,__func__);
     }
     // event_rm(server.el,conn->fd);
     else if (event_create(server.el, conn->fd, conn->type->events_handler,
-                          READABLE, conn) == C_ERR)
-        return C_ERR;
+                          READABLE, conn) == C_ERR){
+            printf("%d - %s\n", __LINE__,__func__);
+            return C_ERR;
+    }
+    printf("%d - %s\n", __LINE__,__func__);
     return C_OK;
 }
 
