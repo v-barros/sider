@@ -14,6 +14,11 @@ void freeClient(client *c);
 client *createClient(connection *conn);
 int processMultibulkBuffer (client *c);
 int processInputBuffer(client *c);
+void dumpClient(client * c){
+    printf("int argc: [%d]\nint argv_len: [%d]\nuint64_t id [%ld]\nconnection *conn: [%p]\nchar querybuf[1024]: \nchar **argv: \nsize_t argv_len_sum: [%ld]\nstruct siderCommand *cmd:  [%p]\nlong bulklen: [%ld]\nsize_t sentlen: [%ld]\ntime_t ctime: [%ld]\ntime_t lastinteraction: [%ld]\nuint64_t flags: [%ld]\nint buf_size: [%d]\nint bufpos: [%d]\n",
+             c->argc,        c->argv_len,             c->id,                c->conn,                                                 c->argv_len_sum,                          c->cmd,          c->bulklen,            c->sentlen,            c->ctime,            c->lastinteraction,              c->flags,         c->buf_size,        c->bufpos
+                );
+}
 
 int _writeToClient(client *c, ssize_t *nwritten) {
     *nwritten = 0;
@@ -272,16 +277,21 @@ void acceptTcpHandler(eventloop *el, int fd, void *privdata, int mask) {
     if (cfd==C_ERR){
         printf("%s accept_con(), error: %s\n",__func__,strerror(errno));
     }
+    printf("%d - %s\n",__LINE__,__func__);
     acceptCommonHandler(connCreateAcceptedSocket(cfd),0);
 }
 
 client *createClient(connection *conn) {
+    printf("%d - %s\n",__LINE__,__func__);
     client *c = malloc(sizeof(client));
     if(!c){
+        printf("%d - %s\n", __LINE__,__func__);
         return NULL;
     }
     if (conn) {
+        printf("%d - %s\n", __LINE__,__func__);
         connSetReadHandler(conn, readQueryFromClient);
+        printf("%d - %s\n", __LINE__,__func__);
         connSetPrivateData(conn, c);
     } 
 
@@ -300,6 +310,7 @@ client *createClient(connection *conn) {
     c->bufpos = 0;
     c->buf_size=REPLY_CHUNK_BYTES;
     printf("client created, id = %ld\n",c->id);
+    dumpClient(c);
     return c;
 }
 
