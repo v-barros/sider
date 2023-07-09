@@ -88,6 +88,7 @@ void createSharedResps(){
     shared.plus=_new("+");
     shared.cone=_new(":1\r\n");
     shared.czero=_new(":0\r\n");
+    shared.null=_new("$-1\r\n");
     int j;
     for (j = 0; j < OBJ_SHARED_BULKHDR_LEN; j++) {
 
