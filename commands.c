@@ -25,8 +25,11 @@ void getCommand(client *c){
     printf("GET key= \"%s\"\n",c->argv[1]);
     resp=server.ht_table->getValue(server.ht_table,c->argv[1]);
     if(resp==NULL){
+        addReply(c,shared.null->text);
         printf("No key\n");
     }else{
+        addReply(c,resp);
+        addReply(c,shared.crlf->text);
         printf("value = \"%s\"\n",resp);
     }
     
