@@ -56,7 +56,5 @@ void event_add(eventloop* eventLoop, int event_fd,int mask);
 
 /*event handlers (callback functions)*/
 
-void read_data(int fd,void*arg,long time_now,void* event_loop);
 int accept_con(int fd);
-void write_data(int fd,void*arg,long time_now,void *event_loop);
 #endif

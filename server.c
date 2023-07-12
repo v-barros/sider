@@ -64,9 +64,9 @@ int processCommand(client *c){
    
     /* Exec the command */
     c->cmd->proc(c);
-    printf("%d - %s\n", __LINE__,__func__);
+   // printf("%d - %s\n", __LINE__,__func__);
     if(clientHasPendingReplies(c)){
-        printf("%d - %s\n", __LINE__,__func__);
+      //  printf("%d - %s\n", __LINE__,__func__);
         connSetWriteHandler(c->conn,sendReplyToClient);
     }
 
@@ -128,17 +128,6 @@ void serverConfInit(){
 
 int reply(const char * buff, int len){
     return 1;
-}
-
-int formatCommand(char * s){
-    int i=0;
-    for(;i<COMMANDS;i++){
-        if(strncmp(s+1,userCommandTable[i].name,3) ==0)
-        {
-            return i;
-        }
-    }    
-    return -1;
 }
 
 int main(void){

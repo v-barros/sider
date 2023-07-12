@@ -41,7 +41,6 @@ typedef struct client client;
 
 typedef struct siderCommand siderCommand;
 typedef void command_proc(client *);
-
 void getCommand(client*);
 
 void setCommand(client*);
@@ -119,8 +118,6 @@ struct server_str {
 void serverConfInit();
 
 void createSharedResps();
-
-int formatCommand(char * s);
 
 void acceptTcpHandler(eventloop *el, int fd, void *privdata, int mask);
 void readQueryFromClient(connection *conn);
