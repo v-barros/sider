@@ -26,9 +26,6 @@ typedef struct ConnectionType {
     int (*accept)(struct connection *conn, ConnectionCallbackFunc accept_handler);
     int (*set_write_handler)(struct connection *conn, ConnectionCallbackFunc handler);
     int (*set_read_handler)(struct connection *conn, ConnectionCallbackFunc handler);
-    const char *(*get_last_error)(struct connection *conn);
-    int (*blocking_connect)(struct connection *conn, const char *addr, int port, long long timeout);
-    int (*get_type)(struct connection *conn);
 } ConnectionType;
 
 struct connection

@@ -18,11 +18,11 @@ static inline int callHandler(connection *conn, ConnectionCallbackFunc handler)
 {
     if (handler){
         handler(conn);
-        printf("%d - %s\n",__LINE__,__func__);
+        //printf("%d - %s\n",__LINE__,__func__);
         return C_OK;
     }
     else{
-        printf("%d - %s\n",__LINE__,__func__);
+        //printf("%d - %s\n",__LINE__,__func__);
         return C_ERR;
     }
         
@@ -36,7 +36,7 @@ static int connSocketAccept(connection *conn, ConnectionCallbackFunc accept_hand
     if (conn->state != CONN_STATE_ACCEPTING)
         return C_ERR;
     conn->state = CONN_STATE_CONNECTED;
-    printf("%d - %s\n",__LINE__,__func__);
+   // printf("%d - %s\n",__LINE__,__func__);
     return callHandler(conn, accept_handler);
 }
 
@@ -48,13 +48,6 @@ ConnectionType CT_Socket = {
     .accept = connSocketAccept,
     .set_write_handler = connSocketSetWriteHandler,
     .set_read_handler = connSocketSetReadHandler
-    /*.get_last_error = connSocketGetLastError,
-      .blocking_connect = connSocketBlockingConnect,
-      .sync_write = connSocketSyncWrite,
-      .sync_read = connSocketSyncRead,
-      .sync_readline = connSocketSyncReadLine,
-      .get_type = connSocketGetType
-  */
 };
 
 connection *connCreateSocket()
@@ -78,7 +71,7 @@ int connGetSocketError(connection *conn)
 {
     int sockerr = 0;
     socklen_t errlen = sizeof(sockerr);
-
+    printf("%d - %s\n", __LINE__,__func__);
     if (getsockopt(conn->fd, SOL_SOCKET, SO_ERROR, &sockerr, &errlen) == -1)
         sockerr = errno;
     return sockerr;
@@ -97,7 +90,7 @@ int connGetSocketError(connection *conn)
 static void connSocketEventHandler(struct _eventloop *el, int fd, void *clientData, int mask)
 {
     connection *conn = clientData;
-    printf("%d - %s\n", __LINE__,__func__);
+   // printf("%d - %s\n", __LINE__,__func__);
     if (conn->state == CONN_STATE_CONNECTING &&
         (mask & WRITABLE) && conn->conn_handler)
     {
@@ -122,22 +115,22 @@ static void connSocketEventHandler(struct _eventloop *el, int fd, void *clientDa
             return;
         conn->conn_handler = NULL;
     }
-    printf("%d - %s\n", __LINE__,__func__);
+  //  printf("%d - %s\n", __LINE__,__func__);
     int call_write = (mask & WRITABLE) && conn->write_handler;
     int call_read = (mask & READABLE) && conn->read_handler;
 
     /* Fire the readable event. */
     if (call_read)
     {
-        printf("%d - %s\n", __LINE__,__func__);
+      //  printf("%d - %s\n", __LINE__,__func__);
         if (callHandler(conn, conn->read_handler)==C_ERR)
             return;
     }
-    printf("%d - %s\n", __LINE__,__func__);
+   // printf("%d - %s\n", __LINE__,__func__);
     /* Fire the writable event. */
     if (call_write)
     {
-        printf("%d - %s\n", __LINE__,__func__);
+      //  printf("%d - %s\n", __LINE__,__func__);
         if (callHandler(conn, conn->write_handler)==C_ERR)
             return;
     }
@@ -231,22 +224,22 @@ static int connSocketSetWriteHandler(connection *conn, ConnectionCallbackFunc fu
  */
 static int connSocketSetReadHandler(connection *conn, ConnectionCallbackFunc func)
 {
-    printf("%d - %s\n", __LINE__,__func__);
+   // printf("%d - %s\n", __LINE__,__func__);
     if (func == conn->read_handler)
         return C_OK;
-    printf("%d - %s\n", __LINE__,__func__);
+ //   printf("%d - %s\n", __LINE__,__func__);
     conn->read_handler = func;
     if (!conn->read_handler)
     {
-        printf("%d - %s\n", __LINE__,__func__);
+   //     printf("%d - %s\n", __LINE__,__func__);
     }
     // event_rm(server.el,conn->fd);
     else if (event_create(server.el, conn->fd, conn->type->events_handler,
                           READABLE, conn) == C_ERR){
-            printf("%d - %s\n", __LINE__,__func__);
+    //        printf("%d - %s\n", __LINE__,__func__);
             return C_ERR;
     }
-    printf("%d - %s\n", __LINE__,__func__);
+  //  printf("%d - %s\n", __LINE__,__func__);
     return C_OK;
 }
 
