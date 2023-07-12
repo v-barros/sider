@@ -8,7 +8,7 @@
 int _sprintf_internal(String * s,const char * fmt,va_list ap);
 
 String * _newNull(){
-    String * s = (String *) calloc(1,sizeof(String));
+    String * s = (String *) malloc(sizeof(String));
     if(!s)
         abort();
     s->len=0;
@@ -19,7 +19,7 @@ String *_new(const char * p){
 }
 
 String * _newl(const char *p, int len){
-    String * s = (String *) calloc(1,sizeof(String));
+    String * s = (String *) malloc(sizeof(String));
     if(!s)
         abort();
     s->text = (char*)calloc(1,len+1);
