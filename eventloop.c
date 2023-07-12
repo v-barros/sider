@@ -16,7 +16,7 @@ void event_delete(eventloop* eventLoop, int event_fd,int delmask);
 
 eventloop * init_loop(int port){
     int epollfd = epoll_create(EVENTS_MAX+1);
-    eventloop * ev = (eventloop*) malloc (sizeof(eventloop));
+    eventloop * ev = (eventloop*) calloc (1,sizeof(eventloop));
     if(!ev)
         abort();
     ev->epollfd=epollfd;
@@ -44,11 +44,11 @@ void set_mask(registered_event* ev,int mask){
 int event_create(eventloop *event_loop,int event_fd, event_handler callback,int mask,void * clientData){
     registered_event *re = &event_loop->events_t[event_fd];
     re->fd=event_fd;
-    
-     if (event_fd >= event_loop->setsize) {
+  //  printf("%d - %s\n", __LINE__,__func__);
+    if (event_fd >= event_loop->setsize) {
         return C_ERR;
     }
-
+  //  printf("%d - %s\n", __LINE__,__func__);
     event_add(event_loop,re->fd,mask);
 
     re->mask |=mask;
@@ -94,11 +94,11 @@ void event_delete(eventloop* eventLoop, int event_fd,int delmask){
     ee.data.fd = event_fd;
     if (mask != NONE) {
         epoll_ctl(eventLoop->epollfd,EPOLL_CTL_MOD,event_fd,&ee);
-         printf("event RM OK [fd=%d], op=%d, events[%0X]\n", ee.data.fd, EPOLL_CTL_MOD, ee.events);
+   //      printf("event RM OK [fd=%d], op=%d, events[%0X]\n", ee.data.fd, EPOLL_CTL_MOD, ee.events);
     } else {
 
         epoll_ctl(eventLoop->epollfd,EPOLL_CTL_DEL,event_fd,&ee);
-        printf("event RM OK [fd=%d], op=%d, events[%0X]\n", ee.data.fd, EPOLL_CTL_DEL, ee.events);
+    //    printf("event RM OK [fd=%d], op=%d, events[%0X]\n", ee.data.fd, EPOLL_CTL_DEL, ee.events);
     }  
 
 }
@@ -117,7 +117,7 @@ void event_add(eventloop* eventLoop, int event_fd,int mask){
         e_event.events |= EPOLLIN;    //EPOLLIN or EPOLLOUT
 
     e_event.data.fd=event_fd;
-    printf("event add OK [fd=%d], op=%d, events[%0X]\n", e_event.data.fd, op, e_event.events);
+   // printf("event add OK [fd=%d], op=%d, events[%0X]\n", e_event.data.fd, op, e_event.events);
 
     if (epoll_ctl(eventLoop->epollfd, op, e_event.data.fd, &e_event) < 0)
     {                   
@@ -154,7 +154,7 @@ void runloop(eventloop* event_loop){
 
             if (firedmask & EPOLLIN) mask |= READABLE;
             if (firedmask & EPOLLOUT) mask |= WRITABLE;
-            printf("%d - %s\n",__LINE__,__func__);            
+          //  printf("%d - %s\n",__LINE__,__func__);            
             if(mask & READABLE && rv->mask & READABLE)
                 rv->read_event_handler(event_loop,rv->fd,rv->clientData,READABLE);
             if(mask & WRITABLE && rv->mask & WRITABLE)
@@ -177,7 +177,7 @@ static inline void check_timeout(long now,int *checkpos,eventloop* event_loop){
             long duration = now - 1;       
             if (duration >= timeout) {
                 close(event_loop->events_t[ck].fd);                           
-                printf("[fd=%d] timeout\n", event_loop->events_t[ck].fd);
+            //    printf("[fd=%d] timeout\n", event_loop->events_t[ck].fd);
                 //event_rm(&event_loop->events_t[ck],event_loop->epollfd);                   
             }
         
