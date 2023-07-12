@@ -144,4 +144,5 @@ int clientHasPendingReplies(client *c);
 /* Write event handler. Just send data to the client. */
 void sendReplyToClient(connection *conn);
 
+void shutdownServer();
 #endif // SERVER_H_

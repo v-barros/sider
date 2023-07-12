@@ -126,6 +126,26 @@ void serverConfInit(){
     server.ht_table=createTable();
 }
 
+void shutdownServer(){
+    free(server.ht_table);
+    free(server.el);
+    free(server.commands);
+    free(shared.cone->text);
+    free(shared.crlf->text);
+    free(shared.czero->text);
+    free(shared.null->text);
+    free(shared.ok->text);
+    free(shared.plus->text);
+    free(shared.cone);
+    free(shared.crlf);
+    free(shared.czero);
+    free(shared.null);
+    free(shared.ok);
+    free(shared.plus);
+  
+    exit(1);
+}
+
 int reply(const char * buff, int len){
     return 1;
 }
